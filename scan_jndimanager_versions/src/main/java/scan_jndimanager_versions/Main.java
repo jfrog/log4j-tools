@@ -14,13 +14,15 @@ public class Main {
         v20,
         v21_to_214,
         v215,
-        v216_OR_ABOVE
+        v216_OR_ABOVE,
+        v212_BACKPORT
     }
     static final private String CLASS_NAME_JNDI_MANAGER = "log4j/core/net/JndiManager.class";
     static final private String CLASS_NAME_JNDI_LOOKUP = "log4j/core/lookup/JndiLookup.class";
     static final private String PATCH_STRING = "allowedJndiProtocols";
     static final private String PATCH_STRING_216 = "log4j2.enableJndi";
     static final private String PATCH_STRING_21 = "LOOKUP";
+    static final private String PATCH_STRING_BACKPORT = "JNDI is not supported";
     static final private String GREEN = "\u001b[32m";
     static final private String RED = "\u001b[31m";
     static final private String RESET_ALL = "\u001b[0m";
@@ -39,13 +41,17 @@ public class Main {
                 return JndiManagerVersion.v216_OR_ABOVE;
             }
             return JndiManagerVersion.v215;
+        } else {
+            if (buf_string.contains(PATCH_STRING_216)) {
+                return JndiManagerVersion.v212_BACKPORT;
+            }
         }
         return JndiManagerVersion.v21_to_214;
     }
 
     private static boolean oldJndiLookup(byte[] class_content) {
         String buf_string = new String(class_content, StandardCharsets.UTF_8);
-        return !buf_string.contains(PATCH_STRING_21);
+        return !buf_string.contains(PATCH_STRING_21) && !buf_string.contains(PATCH_STRING_BACKPORT);
     }
 
     private static void printVersionMessage(String path, JndiManagerVersion version) {
@@ -53,6 +59,9 @@ public class Main {
             case v20:
             case v21_to_214:
                 System.out.println(path + ":"+ RED + " vulnerable JndiManager found" + RESET_ALL);
+                break;
+            case v212_BACKPORT:
+                System.out.println(path + ":"+ GREEN + " fixed JndiManager found" + RESET_ALL + " (backport)");
                 break;
             case v215:
                 System.out.println(path + ":"+ GREEN + " fixed JndiManager found" + RESET_ALL + " (2.15)");

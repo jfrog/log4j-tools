@@ -9,6 +9,7 @@ JNDILOOKUP_CLASS_NAME = "log4j/core/lookup/JndiLookup.class"
 PATCH_STRING = b"allowedJndiProtocols"
 PATCH_STRING_216 = b"log4j2.enableJndi"
 PATCH_STRING_21 = b"LOOKUP"
+PATCH_STRING_BACKPORT = b"JNDI is not supported"
 
 RED = "\x1b[31m"
 GREEN = "\x1b[32m"
@@ -20,6 +21,7 @@ class JndiManagerVersion(Enum):
     v21_to_v214 = auto()
     v215 = auto()
     v216_OR_ABOVE = auto()
+    v212_BACKPORT = auto()
 
 
 def version_message(filename: str, version: JndiManagerVersion):
@@ -27,19 +29,26 @@ def version_message(filename: str, version: JndiManagerVersion):
         print(f"{filename}: {RED}vulnerable JndiManager found{RESET_ALL}")
     elif version == JndiManagerVersion.v215:
         print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (2.15)")
+    elif version == JndiManagerVersion.v212_BACKPORT:
+        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (backport)")
     elif version == JndiManagerVersion.v216_OR_ABOVE:
         print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL}")
 
 
 def old_jndilookup(classfile_content):
-    return PATCH_STRING_21 not in classfile_content
+    return (PATCH_STRING_21 not in classfile_content) and (
+        PATCH_STRING_BACKPORT not in classfile_content
+    )
 
 
 def class_version_jndi_manager(classfile_content):
+
     if PATCH_STRING in classfile_content:
         if PATCH_STRING_216 in classfile_content:
             return JndiManagerVersion.v216_OR_ABOVE
         return JndiManagerVersion.v215
+    elif PATCH_STRING_216 in classfile_content:
+        return JndiManagerVersion.v212_BACKPORT
     return JndiManagerVersion.v21_to_v214
 
 
