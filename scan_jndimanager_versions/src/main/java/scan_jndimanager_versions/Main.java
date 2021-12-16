@@ -11,13 +11,16 @@ import java.util.zip.ZipInputStream;
 
 public class Main {
     enum JndiManagerVersion {
-        v214_OR_BELOW,
+        v20,
+        v21_to_214,
         v215,
         v216_OR_ABOVE
     }
-    static final private String CLASS_NAME = "log4j/core/net/JndiManager.class";
+    static final private String CLASS_NAME_JNDI_MANAGER = "log4j/core/net/JndiManager.class";
+    static final private String CLASS_NAME_JNDI_LOOKUP = "log4j/core/lookup/JndiLookup.class";
     static final private String PATCH_STRING = "allowedJndiProtocols";
     static final private String PATCH_STRING_216 = "log4j2.enableJndi";
+    static final private String PATCH_STRING_21 = "LOOKUP";
     static final private String GREEN = "\u001b[32m";
     static final private String RED = "\u001b[31m";
     static final private String RESET_ALL = "\u001b[0m";
@@ -29,7 +32,7 @@ public class Main {
         }
     }
 
-    private static JndiManagerVersion checkClass(byte[] class_content) {
+    private static JndiManagerVersion checkJndiLookupClass(byte[] class_content) {
         String buf_string = new String(class_content, StandardCharsets.UTF_8);
         if (buf_string.contains(PATCH_STRING)) {
             if (buf_string.contains(PATCH_STRING_216)) {
@@ -37,12 +40,18 @@ public class Main {
             }
             return JndiManagerVersion.v215;
         }
-        return JndiManagerVersion.v214_OR_BELOW;
+        return JndiManagerVersion.v21_to_214;
+    }
+
+    private static boolean oldJndiLookup(byte[] class_content) {
+        String buf_string = new String(class_content, StandardCharsets.UTF_8);
+        return !buf_string.contains(PATCH_STRING_21);
     }
 
     private static void printVersionMessage(String path, JndiManagerVersion version) {
         switch (version) {
-            case v214_OR_BELOW:
+            case v20:
+            case v21_to_214:
                 System.out.println(path + ":"+ RED + " vulnerable JndiManager found" + RESET_ALL);
                 break;
             case v215:
@@ -71,8 +80,14 @@ public class Main {
                 if (entry.getName().endsWith(".jar")) {
                     analyzeFile(zipInputStream, relativePath + "/" + entry.getName());
                 } else {
-                    if (entry.getName().endsWith(CLASS_NAME)) {
-                        printVersionMessage(relativePath, checkClass(zipInputStream.readAllBytes()));
+                    if (entry.getName().endsWith(CLASS_NAME_JNDI_MANAGER)) {
+                        printVersionMessage(relativePath, checkJndiLookupClass(zipInputStream.readAllBytes()));
+                        continue;
+                    }
+                    if (entry.getName().endsWith(CLASS_NAME_JNDI_LOOKUP)) {
+                        if (oldJndiLookup(zipInputStream.readAllBytes())) {
+                            printVersionMessage(relativePath, JndiManagerVersion.v20);
+                        }
                     }
                 }
             }

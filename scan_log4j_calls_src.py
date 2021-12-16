@@ -8,9 +8,16 @@ import easyargs
 from colorama import Fore, Style
 from javalang import parse as parser
 from javalang.parser import JavaSyntaxError
-from javalang.tree import (ClassDeclaration, FieldDeclaration, FormalParameter,
-                           Import, Literal, MethodInvocation, ReferenceType,
-                           VariableDeclaration)
+from javalang.tree import (
+    ClassDeclaration,
+    FieldDeclaration,
+    FormalParameter,
+    Import,
+    Literal,
+    MethodInvocation,
+    ReferenceType,
+    VariableDeclaration,
+)
 from tqdm import tqdm
 
 

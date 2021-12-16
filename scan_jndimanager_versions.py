@@ -4,22 +4,26 @@ from enum import Enum, auto
 from typing import IO
 from zipfile import BadZipFile, ZipFile
 
-CLASS_NAME = "log4j/core/net/JndiManager.class"
+JNDIMANAGER_CLASS_NAME = "log4j/core/net/JndiManager.class"
+JNDILOOKUP_CLASS_NAME = "log4j/core/lookup/JndiLookup.class"
 PATCH_STRING = b"allowedJndiProtocols"
 PATCH_STRING_216 = b"log4j2.enableJndi"
+PATCH_STRING_21 = b"LOOKUP"
+
 RED = "\x1b[31m"
 GREEN = "\x1b[32m"
 RESET_ALL = "\x1b[0m"
 
 
 class JndiManagerVersion(Enum):
-    v214_OR_BELOW = auto()
+    v20 = auto()
+    v21_to_v214 = auto()
     v215 = auto()
     v216_OR_ABOVE = auto()
 
 
 def version_message(filename: str, version: JndiManagerVersion):
-    if version == JndiManagerVersion.v214_OR_BELOW:
+    if version in {JndiManagerVersion.v21_to_v214, JndiManagerVersion.v20}:
         print(f"{filename}: {RED}vulnerable JndiManager found{RESET_ALL}")
     elif version == JndiManagerVersion.v215:
         print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (2.15)")
@@ -27,12 +31,16 @@ def version_message(filename: str, version: JndiManagerVersion):
         print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL}")
 
 
-def class_version(classfile_content):
+def old_jndilookup(classfile_content):
+    return PATCH_STRING_21 not in classfile_content
+
+
+def class_version_jndi_manager(classfile_content):
     if PATCH_STRING in classfile_content:
         if PATCH_STRING_216 in classfile_content:
             return JndiManagerVersion.v216_OR_ABOVE
         return JndiManagerVersion.v215
-    return JndiManagerVersion.v214_OR_BELOW
+    return JndiManagerVersion.v21_to_v214
 
 
 def test_file(file: IO[bytes], rel_path: str):
@@ -43,11 +51,18 @@ def test_file(file: IO[bytes], rel_path: str):
                     next_file = jarfile.open(file_name, "r")
                     test_file(next_file, os.path.join(rel_path, file_name))
                     continue
-                if not file_name.endswith(CLASS_NAME):
+
+                if file_name.endswith(JNDIMANAGER_CLASS_NAME):
+                    classfile_content = jarfile.read(file_name)
+                    version_message(
+                        rel_path, class_version_jndi_manager(classfile_content)
+                    )
                     continue
 
-                classfile_content = jarfile.read(file_name)
-                version_message(rel_path, class_version(classfile_content))
+                if file_name.endswith(JNDILOOKUP_CLASS_NAME):
+                    classfile_content = jarfile.read(file_name)
+                    if old_jndilookup(classfile_content):
+                        version_message(rel_path, JndiManagerVersion.v20)
 
     except (IOError, BadZipFile):
         return
