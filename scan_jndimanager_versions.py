@@ -1,25 +1,41 @@
 import os
 import sys
+from enum import Enum, auto
 from typing import IO
 from zipfile import BadZipFile, ZipFile
 
 CLASS_NAME = "log4j/core/net/JndiManager.class"
 PATCH_STRING = b"allowedJndiProtocols"
+PATCH_STRING_216 = b"log4j2.enableJndi"
 RED = "\x1b[31m"
 GREEN = "\x1b[32m"
 RESET_ALL = "\x1b[0m"
 
 
-def bad_message(filename: str):
-    print(f"{filename}: {RED}vulnerable JndiManager found{RESET_ALL}")
+class JndiManagerVersion(Enum):
+    v214_OR_BELOW = auto()
+    v215 = auto()
+    v216_OR_ABOVE = auto()
 
 
-def good_message(filename: str):
-    print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL}")
+def version_message(filename: str, version: JndiManagerVersion):
+    if version == JndiManagerVersion.v214_OR_BELOW:
+        print(f"{filename}: {RED}vulnerable JndiManager found{RESET_ALL}")
+    elif version == JndiManagerVersion.v215:
+        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (2.15)")
+    elif version == JndiManagerVersion.v216_OR_ABOVE:
+        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL}")
+
+
+def class_version(classfile_content):
+    if PATCH_STRING in classfile_content:
+        if PATCH_STRING_216 in classfile_content:
+            return JndiManagerVersion.v216_OR_ABOVE
+        return JndiManagerVersion.v215
+    return JndiManagerVersion.v214_OR_BELOW
 
 
 def test_file(file: IO[bytes], rel_path: str):
-    found_vulnerable_class = False
     try:
         with ZipFile(file) as jarfile:
             for file_name in jarfile.namelist():
@@ -30,13 +46,9 @@ def test_file(file: IO[bytes], rel_path: str):
                 if not file_name.endswith(CLASS_NAME):
                     continue
 
-                found_vulnerable_class = True
                 classfile_content = jarfile.read(file_name)
-                if PATCH_STRING in classfile_content:
-                    good_message(rel_path)
-                    return
-        if found_vulnerable_class:
-            bad_message(rel_path)
+                version_message(rel_path, class_version(classfile_content))
+
     except (IOError, BadZipFile):
         return
 
@@ -57,7 +69,7 @@ def run_scanner(root_dir: str):
                         test_file(file, rel_path)
     elif os.path.isfile(root_dir):
         if acceptable_filename(root_dir):
-            with open(root_dir, 'rb') as file:
+            with open(root_dir, "rb") as file:
                 test_file(file, "")
 
 

@@ -40,7 +40,7 @@ The tool requires python3, without additional dependencies.
 python scan_jndimanager_versions.py root-folder
 ```
 
-The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code (recursively in each `.jar` file). If the code is located, and does not contain `allowedJndiProtocols`  string constant (added in 2.15), the file as reported as containing a vulnerable implementation if `JndiManager`. 
+The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code (recursively in each `.jar` file). The version of the class is determined using unique string constants ("allowedJndiProtocols", "log4j2.enableJndi") which appeared in this class in versions 2.15 and 2.16.
 
 ------
 
@@ -54,7 +54,13 @@ The tool requires java runtime, without additional dependencies. It can be [reco
 java -jar scan_jndimanager_versions.jar root-folder
 ```
 
-The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code. If the code is located, and does not contain `allowedJndiProtocols`  string constant (added in 2.15), the file as reported as containing a vulnerable implementation if `JndiManager`. 
+The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code (recursively in each `.jar` file). The version of the class is determined using unique string constants ("allowedJndiProtocols", "log4j2.enableJndi") which appeared in this class in versions 2.15 and 2.16.
+
+For both implementations, the results look like this:
+
+<img src="/img/jndi_manager_results.PNG" style="zoom: 67%;" />
+
+To reiterate, the results depend on the classes code rather then file names and metadata. Files where `JndiManager` class is not present (and hence are not vulnerable to CVE-2021-44228 like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`) do not appear in the results; vulnerable versions appear in red, and files containing `JndiManager` from version 2.15 appear with a note. 
 
 ------
 
