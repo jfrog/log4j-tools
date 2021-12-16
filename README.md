@@ -46,7 +46,7 @@ The tool will scan `root_folder` recursively for `.jar` and `.war` files; in eac
 
 ### `scan_jndimanager_versions.jar`
 
-The tool requires java runtime, without additional dependencies. It can be [recompiled](#Compiling scan_jndimanager_versionsjar from source) from the provided source.
+The tool requires java runtime, without additional dependencies. It can be [recompiled](#compiling-scan_jndimanager_versionsjar-from-source) from the provided source.
 
 ##### Usage
 
@@ -76,7 +76,7 @@ The default use case:
 python scan_log4j_calls_jar.py root-folder
 ```
 
-will recursively scan all `.jar` files in `root-folder`, for each printing out locations (class name and method name) of calls to `info`/`warn`/`error`/`log`/`debug` methods of `log4j2.Logger`. 
+will recursively scan all `.jar` files in `root-folder`, for each printing out locations (class name and method name) of calls to `info`/`warn`/`error`/`log`/`debug` /`trace`/`fatal` methods of `log4j2.Logger`. 
 
 The tool may be configured for additional use cases using the following command line flags.
 
