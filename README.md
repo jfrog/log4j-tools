@@ -46,7 +46,9 @@ The tool will scan `root_folder` recursively for `.jar` and `.war` files; in eac
 
 ### `scan_jndimanager_versions.jar`
 
-The tool requires java runtime, without additional dependencies. It can be [recompiled](#compiling-scan_jndimanager_versionsjar-from-source) from the provided source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.1/scan_jndimanager_versions.jar) or [compiled](#compiling-scan_jndimanager_versionsjar-from-source) from source.
+
+The tool requires java runtime, without additional dependencies. 
 
 ##### Usage
 
