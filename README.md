@@ -60,7 +60,7 @@ For both implementations, the results look like this:
 
 <img src="/img/jndi_manager_results.PNG" style="zoom: 67%;" />
 
-To reiterate, the results depend on the classes code rather then file names and metadata. Files where `JndiManager` class is not present (and hence are not vulnerable to CVE-2021-44228 like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`) do not appear in the results; vulnerable versions appear in red, and files containing `JndiManager` from version 2.15 appear with a note. 
+To reiterate, the results depend on the code of the classes rather than file names and the metadata. Files where `JndiManager` class is not present (and hence are not vulnerable to CVE-2021-44228 like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`) do not appear in the results; vulnerable versions appear in red, and files containing `JndiManager` from version 2.15 appear with a note. 
 
 ------
 
