@@ -239,11 +239,15 @@ def run_scanner(
     )
 
     for filename in tqdm(files_to_scan):
-        xref_analysis = XrefAnalysis(filename, class_regex, method_regex)
-        if class_existence:
-            print_class_existence(xref_analysis, os.path.relpath(filename, root_dir))
-        else:
-            print_xrefs_analysis(xref_analysis, os.path.relpath(filename, root_dir))
+        try:
+            xref_analysis = XrefAnalysis(filename, class_regex, method_regex)
+            if class_existence:
+                print_class_existence(xref_analysis, os.path.relpath(filename, root_dir))
+            else:
+                print_xrefs_analysis(xref_analysis, os.path.relpath(filename, root_dir))
+        except ValueError as e:
+            tqdm.write("Parsing error in {filename}")
+
 
 
 if __name__ == "__main__":
