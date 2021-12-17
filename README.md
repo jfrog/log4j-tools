@@ -19,7 +19,7 @@ Does the released code include `log4j2`? Which version of the library is include
 
 2) The code of this library may not appear directly as a separate file (i.e., `log4j2-core-2.xx.0.jar`), but rather be bundled in some other code jar file.
 
-JFrog is releasing a tool to help resolve this problem: [`scan_jndimanager_versions`](#scan_jndimanager_versionspy). The tool looks for the **class code** of `JndiManager` **(regardless of containing `.jar` file names and content of `pom.xml` files)**, which is required for the vulnerability to be exploitable, and checks whether its version is fixed one (i.e., 2.15 or above) by testing for existence of an indicative string. Both Python and Java implementations are included.
+JFrog is releasing a tool to help resolve this problem: [`scan_log4j_versions`](#scan_log4j_versionspy). The tool looks for the **class code** of `JndiManager`  and `JndiLookup` classes **(regardless of containing `.jar` file names and content of `pom.xml` files)**, and attempts to fingerprint the versions of the objects to report whether the included version of `log4j2` is vulnerable. Both Python and Java implementations are included.
 
 ### 2. Where does my code use `log4j2`? 
 
@@ -30,23 +30,27 @@ The question is relevant for the cases where the developer would like to verify 
 
 ## Usage instructions
 
-### `scan_jndimanager_versions.py`
+### `scan_log4j_versions.py`
 
-The tool requires python3, without additional dependencies.
+The tool requires Python 3, without additional dependencies.
 
 ##### Usage
 
 ```
-python scan_jndimanager_versions.py root-folder
+python scan_log4j_versions.py root-folder
 ```
 
-The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code (recursively in each `.jar` file). The version of the class is determined using unique string constants ("allowedJndiProtocols", "log4j2.enableJndi") which appeared in this class in versions 2.15 and 2.16.
+The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` and  `*log4j/core/lookup/JndiLookup.class` (recursively in each `.jar` file). If at least one of the classes is found, the tool attempts to fingerprint its version (including some variations found in patches and backport patches) in order to report whether the code is vulnerable.
+
+<img src="C:\Users\ilya.khivrich\Documents\src\log4j-tools\img\jndi_manager_results.PNG" style="zoom:33%;" />
+
+To reiterate, the results depend on the code of the classes rather than file names and the metadata. Files where both `JndiManager` and `JndiLookup` classes are not present (and hence are not vulnerable to CVE-2021-44228), like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`), do not appear in the results. Otherwise, vulnerability status and estimated version/patch status are displayed. When the versions of the two classes follow a pattern not accounted for, `inconsistent` is reported; this result should be investigated further.
 
 ------
 
-### `scan_jndimanager_versions.jar`
+### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.1/scan_jndimanager_versions.jar) or [compiled](#compiling-scan_jndimanager_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.2/scan_log4j_versions.jar) or [compiled](#compiling-scan_jndimanager_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -56,13 +60,7 @@ The tool requires java runtime, without additional dependencies.
 java -jar scan_jndimanager_versions.jar root-folder
 ```
 
-The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` code (recursively in each `.jar` file). The version of the class is determined using unique string constants ("allowedJndiProtocols", "log4j2.enableJndi") which appeared in this class in versions 2.15 and 2.16.
-
-For both implementations, the results look like this:
-
-<img src="/img/jndi_manager_results.PNG" style="zoom: 67%;" />
-
-To reiterate, the results depend on the code of the classes rather than file names and the metadata. Files where `JndiManager` class is not present (and hence are not vulnerable to CVE-2021-44228 like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`) do not appear in the results; vulnerable versions appear in red, and files containing `JndiManager` from version 2.15 appear with a note. 
+The operation and displayed results are equivalent to the [Python version](#scan_log4j_versionspy).
 
 ------
 
@@ -135,8 +133,8 @@ The tool may be configured for additional use cases using the following command 
 ### Compiling `scan_jndimanager_versions.jar` from source
 
 ```
-cd scan_jndimanager_versions
+cd scan_log4j_versions
 gradle build
-cp build/libs/scan_jndimanager_versions.jar ..
+cp build/libs/scan_log4j_versions.jar ..
 ```
 
