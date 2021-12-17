@@ -50,7 +50,7 @@ To reiterate, the results depend on the code of the classes rather than file nam
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.2/scan_log4j_versions.jar) or [compiled](#compiling-scan_jndimanager_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.2/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -130,7 +130,7 @@ The tool may be configured for additional use cases using the following command 
 | `--class_regex`  | org/apache/logging/log4j/Logger                              | Regular expression for required class name  |
 | `--method_regex` | (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal) | Regular expression for required method name |
 
-### Compiling `scan_jndimanager_versions.jar` from source
+### Compiling `scan_log4j_versions.jar` from source
 
 ```
 cd scan_log4j_versions
