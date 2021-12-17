@@ -1,6 +1,7 @@
 import os
 import sys
-from enum import Enum, auto
+from dataclasses import dataclass
+from enum import Enum, IntEnum, auto
 from typing import IO
 from zipfile import BadZipFile, ZipFile
 
@@ -13,48 +14,105 @@ PATCH_STRING_BACKPORT = b"JNDI is not supported"
 
 RED = "\x1b[31m"
 GREEN = "\x1b[32m"
+YELLOW = "\x1b[33m"
 RESET_ALL = "\x1b[0m"
 
 
-class JndiManagerVersion(Enum):
-    v20 = auto()
-    v21_to_v214 = auto()
+class JndiMgrVer(IntEnum):
+    NOT_FOUND = 0
+    v20_v214 = auto()
     v215 = auto()
-    v216_OR_ABOVE = auto()
-    v212_BACKPORT = auto()
+    v216 = auto()
+    v212_PATCH = auto()
 
 
-def version_message(filename: str, version: JndiManagerVersion):
-    if version in {JndiManagerVersion.v21_to_v214, JndiManagerVersion.v20}:
-        print(f"{filename}: {RED}vulnerable JndiManager found{RESET_ALL}")
-    elif version == JndiManagerVersion.v215:
-        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (2.15)")
-    elif version == JndiManagerVersion.v212_BACKPORT:
-        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL} (backport)")
-    elif version == JndiManagerVersion.v216_OR_ABOVE:
-        print(f"{filename}: {GREEN}fixed JndiManager found{RESET_ALL}")
+class JndiLookupVer(IntEnum):
+    NOT_FOUND = 0
+    v20 = auto()
+    v21_PLUS = auto()
+    v212_PATCH = auto()
 
 
-def old_jndilookup(classfile_content):
-    return (PATCH_STRING_21 not in classfile_content) and (
-        PATCH_STRING_BACKPORT not in classfile_content
+class Status(Enum):
+    INCONSISTENT = auto()
+    VULN = auto()
+    PARTIAL = auto()
+    FIX = auto()
+
+
+@dataclass
+class Diag:
+    status: Status
+    note: str
+
+
+DIAGNOSIS_TABLE = {
+    (JndiLookupVer.NOT_FOUND, JndiMgrVer.v212_PATCH): Diag(
+        Status.FIX, "JndiLookup removed"
+    ),
+    (JndiLookupVer.NOT_FOUND, JndiMgrVer.v216): Diag(Status.FIX, "JndiLookup removed"),
+    (JndiLookupVer.NOT_FOUND, JndiMgrVer.v215): Diag(Status.FIX, "JndiLookup removed"),
+    (JndiLookupVer.NOT_FOUND, JndiMgrVer.v20_v214): Diag(
+        Status.FIX, "JndiLookup removed"
+    ),
+    (JndiLookupVer.v20, JndiMgrVer.NOT_FOUND): Diag(
+        Status.VULN, "Estimated version: 2.0"
+    ),
+    (JndiLookupVer.v21_PLUS, JndiMgrVer.v20_v214): Diag(
+        Status.VULN, "Estimated version: 2.1 .. 2.14"
+    ),
+    (JndiLookupVer.v21_PLUS, JndiMgrVer.v215): Diag(
+        Status.PARTIAL, "Estimated version: 2.15"
+    ),
+    (JndiLookupVer.v21_PLUS, JndiMgrVer.v216): Diag(
+        Status.FIX, "Estimated version: 2.16"
+    ),
+    (JndiLookupVer.v212_PATCH, JndiMgrVer.v212_PATCH): Diag(
+        Status.FIX, "2.12.2 backport patch"
+    ),
+}
+
+
+def confusion_message(filename: str, classname: str):
+    print(
+        f"Warning: {filename} contains multiple copies of {classname}; result may be invalid"
     )
 
 
-def class_version_jndi_manager(classfile_content):
+def version_message(filename: str, diagnosis: Diag):
+    messages = {
+        Status.FIX: f"{GREEN}fixed{RESET_ALL}",
+        Status.VULN: f"{RED}vulnerable{RESET_ALL}",
+        Status.PARTIAL: f"{YELLOW}mitigated{RESET_ALL}",
+        Status.INCONSISTENT: f"{RED}inconsistent{RESET_ALL}",
+    }
+    print(f"{filename}: {messages[diagnosis.status]}  {diagnosis.note}")
 
+
+def class_version_jndi_lookup(classfile_content: bytes) -> JndiLookupVer:
+    if PATCH_STRING_21 in classfile_content:
+        return JndiLookupVer.v21_PLUS
+    if PATCH_STRING_BACKPORT in classfile_content:
+        return JndiLookupVer.v212_PATCH
+    return JndiLookupVer.v20
+
+
+def class_version_jndi_manager(classfile_content: bytes) -> JndiMgrVer:
     if PATCH_STRING in classfile_content:
         if PATCH_STRING_216 in classfile_content:
-            return JndiManagerVersion.v216_OR_ABOVE
-        return JndiManagerVersion.v215
+            return JndiMgrVer.v216
+        return JndiMgrVer.v215
     elif PATCH_STRING_216 in classfile_content:
-        return JndiManagerVersion.v212_BACKPORT
-    return JndiManagerVersion.v21_to_v214
+        return JndiMgrVer.v212_PATCH
+    return JndiMgrVer.v20_v214
 
 
 def test_file(file: IO[bytes], rel_path: str):
     try:
         with ZipFile(file) as jarfile:
+            jndi_manager_status = JndiMgrVer.NOT_FOUND
+            jndi_lookup_status = JndiLookupVer.NOT_FOUND
+
             for file_name in jarfile.namelist():
                 if file_name.endswith(".jar"):
                     next_file = jarfile.open(file_name, "r")
@@ -62,22 +120,34 @@ def test_file(file: IO[bytes], rel_path: str):
                     continue
 
                 if file_name.endswith(JNDIMANAGER_CLASS_NAME):
+                    if jndi_manager_status != JndiMgrVer.NOT_FOUND:
+                        confusion_message(file_name, JNDIMANAGER_CLASS_NAME)
                     classfile_content = jarfile.read(file_name)
-                    version_message(
-                        rel_path, class_version_jndi_manager(classfile_content)
-                    )
+                    jndi_manager_status = class_version_jndi_manager(classfile_content)
                     continue
 
                 if file_name.endswith(JNDILOOKUP_CLASS_NAME):
+                    if jndi_lookup_status != JndiLookupVer.NOT_FOUND:
+                        confusion_message(file_name, JNDILOOKUP_CLASS_NAME)
                     classfile_content = jarfile.read(file_name)
-                    if old_jndilookup(classfile_content):
-                        version_message(rel_path, JndiManagerVersion.v20)
+                    jndi_lookup_status = class_version_jndi_lookup(classfile_content)
+
+            # went over all the files in the current layer; draw conclusions
+            if jndi_lookup_status or jndi_manager_status:
+                diagnosis = DIAGNOSIS_TABLE.get(
+                    (jndi_lookup_status, jndi_manager_status),
+                    Diag(
+                        Status.INCONSISTENT,
+                        f"JndiLookup: {jndi_lookup_status.name}, JndiManager: {jndi_manager_status.name}",
+                    ),
+                )
+                version_message(rel_path, diagnosis)
 
     except (IOError, BadZipFile):
         return
 
 
-def acceptable_filename(filename):
+def acceptable_filename(filename: str):
     return filename.endswith(".jar") or filename.endswith(".war")
 
 
