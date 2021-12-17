@@ -89,7 +89,7 @@ The tool may be configured for additional use cases using the following command 
 | Flag                  | Default value                                                | Use                                                          |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | `--class_regex`       | org/apache/logging/log4j/Logger                              | Regular expression for required class name                   |
-| `--method_regex`      | (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal) | Regular expression for required method name                  |
+| `--method_regex`      | (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal&#124;catching&#124;throwing&#124;traceEntry&#124;printf&#124;logMessage) | Regular expression for required method name                  |
 | `--quickmatch_string` | log4j                                                        | Pre-condition for file analysis: .jar files not containing the specified string will be ignored |
 | `--class_existence`   | Not set                                                      | When not set, look for calls to class::method as  specified by regexes. When set, `--method_regex` is ignored, and the tool will look for *existence* of classes specified by `--class_regex` in the jar. |
 | `--no_quickmatch`     | Not set                                                      | When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed |
@@ -128,7 +128,7 @@ The tool may be configured for additional use cases using the following command 
 | Flag             | Default value                                                | Use                                         |
 | ---------------- | ------------------------------------------------------------ | ------------------------------------------- |
 | `--class_regex`  | org/apache/logging/log4j/Logger                              | Regular expression for required class name  |
-| `--method_regex` | (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal) | Regular expression for required method name |
+| `--method_regex` | (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal&#124;catching&#124;throwing&#124;traceEntry&#124;printf&#124;logMessage) | Regular expression for required method name |
 
 ### Compiling `scan_log4j_versions.jar` from source
 

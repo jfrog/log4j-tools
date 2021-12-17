@@ -181,7 +181,7 @@ def traverse_folder(root_dir):
 def scan(
     root_dir,
     class_regex=r"org.apache.logging.log4j.Logger",
-    method_regex="(info|warn|error|log|debug|trace|fatal)",
+    method_regex="(info|warn|error|log|debug|trace|fatal|catching|throwing|traceEntry|printf|logMessage)",
 ):
     parsing_failed_files = []
     for filename in tqdm(list(traverse_folder(root_dir))):
