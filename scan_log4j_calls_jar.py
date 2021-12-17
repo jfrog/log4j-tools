@@ -246,7 +246,7 @@ def run_scanner(
             else:
                 print_xrefs_analysis(xref_analysis, os.path.relpath(filename, root_dir))
         except ValueError as e:
-            tqdm.write("Parsing error in {filename}")
+            tqdm.write(f"Parsing error in {filename}")
 
 
 
