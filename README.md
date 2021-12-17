@@ -6,6 +6,7 @@ Click to find:
 
 | [Inclusions of `log4j2` in compiled code](#scan_jndimanager_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| [Sanity check for env mitigations](#env_verifyjar)           |                                                              |                                                             |
 
 ### Overview
 
@@ -27,6 +28,12 @@ The question is relevant for the cases where the developer would like to verify 
 
 1. [`scan_log4j2_calls_src.py`](#scan_log4j_calls_srcpy), which locates calls to log4j2 logging functions (info, log, error etc.) with non-constant arguments in *.java source files* and reports the findings on the level of source file and line
 2. [`scan_log4j2_calls_jar.py`](#scan_log4j_calls_jarpy), which locates the calls to logging functions in *compiled .jar*s, and reports the findings as class name and method names in which each call appears.
+
+### 3. Am I configuring this correctly?
+
+Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured in a way that mitigates the vulnerability (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, Jfrog releases a simple tool [env_verify.jar](#env_verifyjar) which is intended to run in the same environment as a production application and validate it.
+
+------
 
 ## Usage instructions
 
@@ -130,6 +137,32 @@ The tool may be configured for additional use cases using the following command 
 | `--class_regex`  | org/apache/logging/log4j/Logger | Regular expression for required class name  |
 | `--method_regex` | [^1]                            | Regular expression for required method name |
 
+------
+
+### `env_verify.jar`
+
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.3/env_verify.jar) or [compiled](#compiling-env_verifyjar-from-source) from source, and does not require additional dependencies.
+
+#### Usage
+
+The intended use is running the tool in the same setting precisely as the production application. For example, for the original launch line in the start-up script:
+
+```shell
+eval "\"${JAVA_CMD}\" ${VMARG_LIST} application ${CLASSNAME} ${ARGS[@]}" &>/dev/null &
+```
+
+We add the following to the script:
+
+```shell
+eval "\"${JAVA_CMD}\" ${VMARG_LIST} -jar env_verify.jar" > /tmp/env_verify
+```
+
+And read the result after the start-up script completes:
+
+<img src="img/env_verify_results.PNG" style="zoom: 33%;" />
+
+------
+
 ### Compiling `scan_log4j_versions.jar` from source
 
 ```
@@ -137,5 +170,19 @@ cd scan_log4j_versions
 gradle build
 cp build/libs/scan_log4j_versions.jar ..
 ```
+
+------
+
+### Compiling `env_verify.jar` from source
+
+```
+cd env_verify
+gradle build
+cp build/libs/env_verify.jar ..
+```
+
+
+
+------
 
 [^1]: (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal&#124;catching&#124;throwing&#124;traceEntry&#124;printf&#124;logMessage)
