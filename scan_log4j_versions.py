@@ -9,6 +9,7 @@ JNDIMANAGER_CLASS_NAME = "log4j/core/net/JndiManager.class"
 JNDILOOKUP_CLASS_NAME = "log4j/core/lookup/JndiLookup.class"
 PATCH_STRING = b"allowedJndiProtocols"
 PATCH_STRING_216 = b"log4j2.enableJndi"
+PATCH_STRING_217 = b"isJndiLookupEnabled"
 PATCH_STRING_21 = b"LOOKUP"
 PATCH_STRING_BACKPORT = b"JNDI is not supported"
 
@@ -23,6 +24,7 @@ class JndiMgrVer(IntEnum):
     v20_v214 = auto()
     v215 = auto()
     v216 = auto()
+    v217 = auto()
     v212_PATCH = auto()
 
 
@@ -67,9 +69,16 @@ DIAGNOSIS_TABLE = {
     (JndiLookupVer.v21_PLUS, JndiMgrVer.v216): Diag(
         Status.FIX, "Estimated version: 2.16"
     ),
+
+    (JndiLookupVer.v21_PLUS, JndiMgrVer.v217): Diag(
+        Status.FIX, "Estimated version: 2.17"
+    ),
+
+
     (JndiLookupVer.v212_PATCH, JndiMgrVer.v212_PATCH): Diag(
         Status.FIX, "2.12.2 backport patch"
     ),
+
 }
 
 
@@ -103,7 +112,10 @@ def class_version_jndi_manager(classfile_content: bytes) -> JndiMgrVer:
             return JndiMgrVer.v216
         return JndiMgrVer.v215
     elif PATCH_STRING_216 in classfile_content:
-        return JndiMgrVer.v212_PATCH
+        if PATCH_STRING_217 in classfile_content:
+            return JndiMgrVer.v217
+        else:
+            return JndiMgrVer.v212_PATCH
     return JndiMgrVer.v20_v214
 
 

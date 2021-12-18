@@ -15,6 +15,7 @@ public class Main {
         v20_v214,
         v215,
         v216,
+        v217,
         v212_PATCH,
     }
 
@@ -47,6 +48,8 @@ public class Main {
     static final private String PATCH_STRING_216 = "log4j2.enableJndi";
     static final private String PATCH_STRING_21 = "LOOKUP";
     static final private String PATCH_STRING_BACKPORT = "JNDI is not supported";
+    static final private String PATCH_STRING_217 = "isJndiLookupEnabled";
+
     static final private String GREEN = "\u001b[32m";
     static final private String RED = "\u001b[31m";
     static final private String YELLOW = "\u001b[33m";
@@ -87,7 +90,11 @@ public class Main {
             return JndiManagerVersion.v215;
         } else {
             if (buf_string.contains(PATCH_STRING_216)) {
-                return JndiManagerVersion.v212_PATCH;
+                if (buf_string.contains(PATCH_STRING_217)) {
+                    return JndiManagerVersion.v217;
+                } else {
+                    return JndiManagerVersion.v212_PATCH;
+                }
             }
         }
         return JndiManagerVersion.v20_v214;
@@ -140,6 +147,9 @@ public class Main {
                         return new Diag(Status.PARTIAL, "Estimated version: 2.15");
                     case v216:
                         return new Diag(Status.FIXED, "Estimated version: 2.16");
+                    case v217:
+                        return new Diag(Status.FIXED, "Estimated version: 2.17");
+
                 }
         }
         return new Diag(Status.INCONSISTENT, "JndiLookup: " + lookupVersion +
