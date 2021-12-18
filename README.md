@@ -31,7 +31,7 @@ The question is relevant for the cases where the developer would like to verify 
 
 ### 3. Am I configuring this correctly?
 
-Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured in a way that mitigates the vulnerability (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, Jfrog releases a simple tool [env_verify.jar](#env_verifyjar) which is intended to run in the same environment as a production application and validate it.
+Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, Jfrog releases a simple tool [env_verify.jar](#env_verifyjar) which is intended to run in the same environment as a production application and validate it.
 
 ------
 
@@ -53,11 +53,17 @@ The tool will scan `root_folder` recursively for `.jar` and `.war` files; in eac
 
 To reiterate, the results depend on the code of the classes rather than file names and the metadata. Files where both `JndiManager` and `JndiLookup` classes are not present (and hence are not vulnerable to CVE-2021-44228), like `log4j-1.x.xx.jar`, or `log4j-api-2.xx.x.jar`, do not appear in the results. Otherwise, vulnerability status and estimated version/patch status are displayed. When the versions of the two classes follow a pattern not accounted for, `inconsistent` is reported; this result should be investigated further.
 
+#### Currently recognized log4j versions:
+
+| Vulnerable           | Mitigated | Fixed                    |
+| -------------------- | --------- | ------------------------ |
+| `2.0`, `2.1 .. 2.14` | `2.15`    | `2.12.2`, `2.16`, `2.17` |
+
 ------
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.2/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.4/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
