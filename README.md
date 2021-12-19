@@ -115,6 +115,10 @@ python scan_log4j_calls_jar.py --class_regex ".*JndiManager$" --class_existence 
 
 Will scan all `.jar` files (even if they do have no mentions of `log4j2`) for the existence of a class ending with `JndiManager`. 
 
+Typical results output looks like this:
+
+<img src="img/scan_log4j_jar.PNG" style="zoom:33%;" />
+
 ------
 
 ### `scan_log4j_calls_src.py`
@@ -142,6 +146,10 @@ The tool may be configured for additional use cases using the following command 
 | ---------------- | ------------------------------- | ------------------------------------------- |
 | `--class_regex`  | org/apache/logging/log4j/Logger | Regular expression for required class name  |
 | `--method_regex` | [^1]                            | Regular expression for required method name |
+
+Typical output looks like this:
+
+<img src="img/scan_log4j_src.PNG" style="zoom:33%;" />
 
 ------
 
