@@ -3,3 +3,4 @@ javalang
 tqdm
 easyargs
 colorama
+dataclasses
