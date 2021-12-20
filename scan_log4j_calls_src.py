@@ -1,7 +1,6 @@
 import os
 import re
-from collections import defaultdict
-from dataclasses import dataclass
+from collections import defaultdict, namedtuple
 from typing import Dict, Set
 
 import easyargs
@@ -21,10 +20,7 @@ from javalang.tree import (
 from tqdm import tqdm
 
 
-@dataclass(frozen=True)
-class CalleeDesc:
-    class_name: str
-    method_name: str
+CalleeDesc = namedtuple("CalleeDesc", ["class_name", "method_name"])
 
 
 def traverse(t, visitor):
