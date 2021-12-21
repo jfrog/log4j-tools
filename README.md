@@ -63,7 +63,7 @@ To reiterate, the results depend on the code of the classes rather than file nam
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.4/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.5/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -155,7 +155,7 @@ Typical output looks like this:
 
 ### `env_verify.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.3/env_verify.jar) or [compiled](#compiling-env_verifyjar-from-source) from source, and does not require additional dependencies.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.5/env_verify.jar) or [compiled](#compiling-env_verifyjar-from-source) from source, and does not require additional dependencies.
 
 #### Usage
 
