@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.io.DataInputStream;
+
 
 public class Main {
     enum JndiManagerVersion {
@@ -156,6 +158,19 @@ public class Main {
                 ", JndiManager: " + managerVersion);
     }
 
+    private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+        final int bufLen = 1024;
+        byte[] buf = new byte[bufLen];
+        int readLen;
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        while ((readLen = inputStream.read(buf, 0, bufLen)) != -1) {
+            outputStream.write(buf, 0, readLen);
+
+        }
+        return outputStream.toByteArray();
+    }
 
     private static void analyzeFile(InputStream stream, String relativePath) throws IOException {
         ZipEntry entry;
@@ -171,14 +186,14 @@ public class Main {
                         if (managerVersion != JndiManagerVersion.NOT_FOUND) {
                             confusionMessage(relativePath, CLASS_NAME_JNDI_MANAGER);
                         }
-                        managerVersion = getJndiManagerVersion(zipInputStream.readAllBytes());
+                        managerVersion = getJndiManagerVersion(readAllBytes(zipInputStream));
                         continue;
                     }
                     if (entry.getName().endsWith(CLASS_NAME_JNDI_LOOKUP)) {
                         if (lookupVersion != JndiLookupVersion.NOT_FOUND) {
                             confusionMessage(relativePath, CLASS_NAME_JNDI_LOOKUP);
                         }
-                        lookupVersion = getJndiLookupVersion(zipInputStream.readAllBytes());
+                        lookupVersion = getJndiLookupVersion(readAllBytes(zipInputStream));
 
                     }
                 }
