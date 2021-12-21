@@ -126,7 +126,7 @@ def test_file(file: IO[bytes], rel_path: str):
             jndi_lookup_status = JndiLookupVer.NOT_FOUND
 
             for file_name in jarfile.namelist():
-                if file_name.endswith(".jar"):
+                if acceptable_filename(file_name):
                     next_file = jarfile.open(file_name, "r")
                     test_file(next_file, os.path.join(rel_path, file_name))
                     continue
@@ -160,7 +160,7 @@ def test_file(file: IO[bytes], rel_path: str):
 
 
 def acceptable_filename(filename: str):
-    return filename.endswith(".jar") or filename.endswith(".war")
+    return filename.endswith(".jar") or filename.endswith(".war") or filename.endswith(".ear") or filename.endswith(".sar")
 
 
 def run_scanner(root_dir: str):
@@ -171,8 +171,11 @@ def run_scanner(root_dir: str):
                 if acceptable_filename(filename):
                     full_path = os.path.join(directory, filename)
                     rel_path = os.path.relpath(full_path, root_dir)
-                    with open(full_path, "rb") as file:
-                        test_file(file, rel_path)
+                    try:
+                        with open(full_path, "rb") as file:
+                            test_file(file, rel_path)
+                    except FileNotFoundError as fnf_error:
+                        print(fnf_error)
     elif os.path.isfile(root_dir):
         if acceptable_filename(root_dir):
             with open(root_dir, "rb") as file:
@@ -183,4 +186,11 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <root_folder>")
         exit()
-    run_scanner(sys.argv[1])
+
+    root_dir = sys.argv[1]
+
+    if not os.path.isdir(root_dir):
+        print("Given directory [" + root_dir + "] does not exist")
+        exit(1)
+
+    run_scanner(root_dir)
