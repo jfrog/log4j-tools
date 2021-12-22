@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.io.DataInputStream;
-
 
 public class Main {
     enum JndiManagerVersion {
@@ -178,7 +176,17 @@ public class Main {
         JndiManagerVersion managerVersion = JndiManagerVersion.NOT_FOUND;
         JndiLookupVersion lookupVersion = JndiLookupVersion.NOT_FOUND;
         try {
-            while ((entry = zipInputStream.getNextEntry()) != null) {
+            while (true) {
+                try {
+                    entry = zipInputStream.getNextEntry();
+                    if (entry == null) {
+                        break;
+                    }
+                }
+                catch (IllegalArgumentException  e) {
+                    continue;
+                }
+
                 if (entry.getName().endsWith(".jar")) {
                     analyzeFile(zipInputStream, relativePath + "/" + entry.getName());
                 } else {
