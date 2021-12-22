@@ -113,7 +113,7 @@ public class Main {
     }
 
     private static void confusionMessage(String relPath, String duplicateClass) {
-        System.out.println("Warning: "+ relPath + " contains multiple copies of " + duplicateClass);
+        System.out.println("Warning: " + relPath + " contains multiple copies of " + duplicateClass);
     }
 
     private static void analyzeFileName(Path path, String root_dir) {
@@ -187,7 +187,7 @@ public class Main {
                     continue;
                 }
 
-                if (entry.getName().endsWith(".jar")) {
+                if (acceptableFile(entry.getName())) {
                     analyzeFile(zipInputStream, relativePath + "/" + entry.getName());
                 } else {
                     if (entry.getName().endsWith(CLASS_NAME_JNDI_MANAGER)) {
@@ -219,7 +219,8 @@ public class Main {
     }
 
     private static boolean acceptableFile(String filename) {
-        return filename.endsWith(".jar") || filename.endsWith(".war");
+        return filename.endsWith(".jar") || filename.endsWith(".war") ||
+               filename.endsWith(".ear") || filename.endsWith(".sar");
     }
 
     private static void runScan(String root_folder) throws IOException{
