@@ -1,0 +1,24 @@
+apply plugin: 'java'
+
+repositories { 
+    mavenCentral() 
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'Main'
+        )
+    }
+}
+
+dependencies {
+
+
+
+}

@@ -6,7 +6,7 @@ Click to find:
 
 | [Inclusions of `log4j2` in compiled code](#scan_jndimanager_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
-| [Sanity check for env mitigations](#env_verifyjar)           |                                                              |                                                             |
+| [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) |                                                             |
 
 ### Overview
 
@@ -31,7 +31,10 @@ The question is relevant for the cases where the developer would like to verify 
 
 ### 3. Am I configuring this correctly?
 
-Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, Jfrog releases a simple tool [env_verify.jar](#env_verifyjar) which is intended to run in the same environment as a production application and validate it.
+Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, JFrog is releasing a few tools. The tools are intended to run in the same environment as a production application -
+
+* [env_verify.jar](#env_verifyjar) will validate the proper application of mitigations against CVE-2021-44228.
+* [scan_cve_2021_45046_config](#scan_cve_2021_45046_config) will validate the `log4j2` configuration does not allow for exploitation of CVE-2021-45046.
 
 ------
 
@@ -63,7 +66,7 @@ To reiterate, the results depend on the code of the classes rather than file nam
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.7/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.8/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -177,6 +180,38 @@ And read the result after the start-up script completes:
 
 ------
 
+### `scan_cve_2021_45046_config`
+
+##### Usage
+
+Python version requires installing dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+Jar version can be [compiled](#compiling-scan_cve_2021_45046_configjar-from-source) from source or downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.8/scan_cve_2021_45046_config.jar).
+
+```
+python scan_cve_2021_45046_config.py root-folder
+```
+
+or
+
+```
+java -jar scan_cve_2021_45046_config.jar root-folder
+```
+
+Will recursively scan `root-folder` and all archive files in it, looking for probable log4j configuration files (`xml`, `yml`, `properties`,`json`), in each looking for [configuration options](https://jfrog.com/blog/log4shell-0-day-vulnerability-all-you-need-to-know/#appendix-c) which may enable an attacker to exploit CVE-2021-45046.
+
+Please note that an "applicable" result only means that the configuration **may** be problematic and should be inspected.
+
+A "non-applicable" result is more conclusive, and means the configuration does not contain even the basic (publicly known) options for the exploitation of CVE-2021-45046.
+
+
+
+------
+
 ### Compiling `scan_log4j_versions.jar` from source
 
 ```
@@ -195,7 +230,15 @@ gradle build
 cp build/libs/env_verify.jar ..
 ```
 
+------
 
+### Compiling `scan_cve_2021_45046_config.jar` from source
+
+```
+cd env_verify
+gradle build
+cp build/libs/env_verify.jar ..
+```
 
 ------
 
