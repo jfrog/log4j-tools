@@ -1,6 +1,6 @@
 import os
 import sys
-from dataclasses import dataclass
+from collections import namedtuple
 from enum import Enum, IntEnum, auto
 from typing import IO
 from zipfile import BadZipFile, ZipFile
@@ -42,10 +42,7 @@ class Status(Enum):
     FIX = auto()
 
 
-@dataclass
-class Diag:
-    status: Status
-    note: str
+Diag = namedtuple("Diag", ["status", "note"])
 
 
 DIAGNOSIS_TABLE = {
