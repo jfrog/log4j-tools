@@ -2,7 +2,7 @@ import os
 import sys
 from collections import namedtuple
 from enum import Enum, IntEnum, auto
-from typing import IO
+from typing import IO, Set
 from zipfile import BadZipFile, ZipFile
 
 JNDIMANAGER_CLASS_NAME = "log4j/core/net/JndiManager.class"
@@ -66,16 +66,12 @@ DIAGNOSIS_TABLE = {
     (JndiLookupVer.v21_PLUS, JndiMgrVer.v216): Diag(
         Status.FIX, "Estimated version: 2.16"
     ),
-
     (JndiLookupVer.v21_PLUS, JndiMgrVer.v217): Diag(
         Status.FIX, "Estimated version: 2.17"
     ),
-
-
     (JndiLookupVer.v212_PATCH, JndiMgrVer.v212_PATCH): Diag(
         Status.FIX, "2.12.2 backport patch"
     ),
-
 }
 
 
@@ -157,13 +153,23 @@ def test_file(file: IO[bytes], rel_path: str):
 
 
 def acceptable_filename(filename: str):
-    return filename.endswith(".jar") or filename.endswith(".war") or filename.endswith(".ear") or filename.endswith(".sar")
+    return (
+        filename.endswith(".jar")
+        or filename.endswith(".war")
+        or filename.endswith(".ear")
+        or filename.endswith(".sar")
+    )
 
 
-def run_scanner(root_dir: str):
+def run_scanner(root_dir: str, exclude_dirs: Set[str]):
     if os.path.isdir(root_dir):
-        print("Scanning...")
-        for directory, dirs, files in os.walk(root_dir):
+        for directory, dirs, files in os.walk(root_dir, topdown=True):
+            [
+                dirs.remove(excluded_dir)
+                for excluded_dir in list(dirs)
+                if os.path.join(directory, excluded_dir) in exclude_dirs
+            ]
+
             for filename in files:
                 if acceptable_filename(filename):
                     full_path = os.path.join(directory, filename)
@@ -179,15 +185,41 @@ def run_scanner(root_dir: str):
                 test_file(file, "")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <root_folder>")
-        exit()
+def print_usage():
+    print(f"Usage: {sys.argv[0]} <root_folder> [-exclude <folder1> <folder2> ...]")
+    print(f"or: {sys.argv[0]} <archive_file>")
+    exit()
+
+
+def parse_command_line():
+    if len(sys.argv) < 2 or len(sys.argv) == 3:
+        print_usage()
 
     root_dir = sys.argv[1]
+    exclude_folders = []
+    if len(sys.argv) > 3:
+        if sys.argv[2] != "-exclude":
+            print_usage()
+        exclude_folders = sys.argv[3:]
+    return root_dir, exclude_folders
 
-    if not os.path.isdir(root_dir):
-        print("Given directory [" + root_dir + "] does not exist")
-        exit(1)
 
-    run_scanner(root_dir)
+if __name__ == "__main__":
+
+    root_dir, exclude_dirs = parse_command_line()
+
+    for dir_to_check in exclude_dirs:
+        if not os.path.isdir(dir_to_check):
+            print(f"{dir_to_check} is not a directory")
+            print_usage()
+    if not os.path.isdir(root_dir) and not (
+        os.path.isfile(root_dir) and acceptable_filename(root_dir)
+    ):
+        print(f"{root_dir} is not a directory or an archive")
+        print_usage()
+
+    print(f"Scanning {root_dir}")
+    if exclude_dirs:
+        print("Excluded: " + ", ".join(exclude_dirs))
+
+    run_scanner(root_dir, set(exclude_dirs))
