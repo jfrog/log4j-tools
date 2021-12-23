@@ -77,18 +77,22 @@ DIAGNOSIS_TABLE = {
 
 def confusion_message(filename: str, classname: str):
     print(
-        f"Warning: {filename} contains multiple copies of {classname}; result may be invalid"
+        "Warning: "
+        + filename
+        + " contains multiple copies of "
+        + classname
+        + "; result may be invalid"
     )
 
 
 def version_message(filename: str, diagnosis: Diag):
     messages = {
-        Status.FIX: f"{GREEN}fixed{RESET_ALL}",
-        Status.VULN: f"{RED}vulnerable{RESET_ALL}",
-        Status.PARTIAL: f"{YELLOW}mitigated{RESET_ALL}",
-        Status.INCONSISTENT: f"{RED}inconsistent{RESET_ALL}",
+        Status.FIX: GREEN + "fixed" + RESET_ALL,
+        Status.VULN: RED + "vulnerable" + RESET_ALL,
+        Status.PARTIAL: YELLOW + "mitigated" + RESET_ALL,
+        Status.INCONSISTENT: RED + "inconsistent" + RESET_ALL,
     }
-    print(f"{filename}: {messages[diagnosis.status]}  {diagnosis.note}")
+    print(filename + ": " + messages[diagnosis.status] + " " + diagnosis.note)
 
 
 def class_version_jndi_lookup(classfile_content: bytes) -> JndiLookupVer:
@@ -143,7 +147,10 @@ def test_file(file: IO[bytes], rel_path: str):
                     (jndi_lookup_status, jndi_manager_status),
                     Diag(
                         Status.INCONSISTENT,
-                        f"JndiLookup: {jndi_lookup_status.name}, JndiManager: {jndi_manager_status.name}",
+                        "JndiLookup: "
+                        + jndi_lookup_status.name
+                        + ", JndiManager: "
+                        + jndi_manager_status.name,
                     ),
                 )
                 version_message(rel_path, diagnosis)
@@ -186,8 +193,8 @@ def run_scanner(root_dir: str, exclude_dirs: Set[str]):
 
 
 def print_usage():
-    print(f"Usage: {sys.argv[0]} <root_folder> [-exclude <folder1> <folder2> ...]")
-    print(f"or: {sys.argv[0]} <archive_file>")
+    print("Usage: " + sys.argv[0] + " <root_folder> [-exclude <folder1> <folder2> ...]")
+    print("or: " + sys.argv[0] + " <archive_file>")
     exit()
 
 
@@ -210,15 +217,15 @@ if __name__ == "__main__":
 
     for dir_to_check in exclude_dirs:
         if not os.path.isdir(dir_to_check):
-            print(f"{dir_to_check} is not a directory")
+            print(dir_to_check + " is not a directory")
             print_usage()
     if not os.path.isdir(root_dir) and not (
         os.path.isfile(root_dir) and acceptable_filename(root_dir)
     ):
-        print(f"{root_dir} is not a directory or an archive")
+        print(root_dir + " is not a directory or an archive")
         print_usage()
 
-    print(f"Scanning {root_dir}")
+    print("Scanning " + root_dir)
     if exclude_dirs:
         print("Excluded: " + ", ".join(exclude_dirs))
 
