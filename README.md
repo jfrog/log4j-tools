@@ -31,7 +31,7 @@ The question is relevant for the cases where the developer would like to verify 
 
 ### 3. Am I configuring this correctly?
 
-Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, JFrog is releasing a few tools. The tools are intended to run in the same environment as a production application -
+Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, JFrog is releasing a few tools. The tools are intended to run in the same environment as a production application.
 
 * [env_verify.jar](#env_verifyjar) will validate the proper application of mitigations against CVE-2021-44228.
 * [scan_cve_2021_45046_config](#scan_cve_2021_45046_config) will validate the `log4j2` configuration does not allow for exploitation of CVE-2021-45046.
@@ -47,10 +47,12 @@ The tool requires Python 3, without additional dependencies.
 ##### Usage
 
 ```
-python scan_log4j_versions.py root-folder
+python scan_log4j_versions.py root-folder [-exclude folder1 folder2 ..]
 ```
 
 The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` and  `*log4j/core/lookup/JndiLookup.class` (recursively in each `.jar` file). If at least one of the classes is found, the tool attempts to fingerprint its version (including some variations found in patches and backport patches) in order to report whether the code is vulnerable.
+
+Folders appearing after `-exclude` (optional) are skipped.
 
 <img src="img/jndi_manager_results.PNG" style="zoom:33%;" />
 
@@ -66,7 +68,7 @@ To reiterate, the results depend on the code of the classes rather than file nam
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.8/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.9/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -141,7 +143,7 @@ The default use case:
 python scan_log4j_calls_src.py root-folder
 ```
 
-will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods.
+will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods. 
 
 The tool may be configured for additional use cases using the following command line flags:
 

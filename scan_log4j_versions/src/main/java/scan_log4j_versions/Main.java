@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,10 +56,18 @@ public class Main {
     static final private String YELLOW = "\u001b[33m";
     static final private String RESET_ALL = "\u001b[0m";
 
+    private static boolean notExcludedDir(Path path, List<Path> excluded) {
+        for (Path excludedPath: excluded) {
+            if (path.startsWith(excludedPath)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    public static List<Path> listFiles(Path path) throws IOException {
+    private static List<Path> listFiles(Path path, List<Path> excludedDirs) throws IOException {
         try (Stream<Path> walk = Files.walk(path)) {
-            return walk.filter(Files::isRegularFile)
+            return walk.filter(Files::isRegularFile).filter(x -> notExcludedDir(x, excludedDirs))
                     .collect(Collectors.toList());
         }
     }
@@ -223,12 +232,11 @@ public class Main {
                filename.endsWith(".ear") || filename.endsWith(".sar");
     }
 
-    private static void runScan(String root_folder) throws IOException{
-        System.out.println("Scanning...");
+    private static void runScan(String root_folder, List<Path> excludedDirs) throws IOException{
         File f = new File(root_folder);
         if (f.isDirectory()) {
             Path path = Paths.get(root_folder);
-            List<Path> paths = listFiles(path);
+            List<Path> paths = listFiles(path, excludedDirs);
             paths.stream().
                     filter(x -> acceptableFile(x.toString())).
                     forEach(x -> analyzeFileName(x, root_folder));
@@ -243,15 +251,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Usage: scan_jndimanager_versions.jar <root_folder>");
+        String rootPath = "";
+        List<Path> excludedFolders = new ArrayList<>();
+        if (args.length == 1 ) {
+            rootPath = args[0];
         } else {
-            try{
-                runScan(args[0]);
+            if (args.length > 2 && args[1].equals("-exclude")) {
+                rootPath = args[0];
+                for (int index=2; index < args.length; index++) {
+                    excludedFolders.add(Paths.get(args[index]));
+                }
+            } else {
+                System.out.println("Usage: scan_jndimanager_versions.jar <root_folder> [-exclude <folder1> <folder2> ...]");
             }
-            catch (IOException e) {
-                System.out.println("Cannot list directory");
-            }
+        }
+        try{
+            runScan(rootPath, excludedFolders);
+        }
+        catch (IOException e) {
+            System.out.println("Cannot list directory");
         }
     }
 }
