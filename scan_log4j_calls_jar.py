@@ -82,9 +82,10 @@ def jar_quickmatch(filename, match_string):
 
 
 class XrefAnalysis:
-    def __init__(self, filename, class_regex, method_regex):
+    def __init__(self, filename, class_regex, method_regex, caller_block):
         self.class_regex_compiled = re.compile(class_regex)
         self.method_regex_compiled = re.compile(method_regex)
+        self.caller_block_compiled = re.compile(caller_block)
         self.class_loader = ClassLoader(filename)
         self.methods, self.callers = self.traverse(self.class_loader)
 
@@ -180,20 +181,28 @@ def callsites_in_method(method: Method):
 
 
 def traverse_folder(root_dir, quickmatch_string, do_quickmatch):
-    print(f"Walking {root_dir}...")
-    files_to_scan = []
-    for root, dirs, files in os.walk(root_dir):
-        for f in files:
-            if f.endswith(".jar"):
-                full_name = os.path.join(root, f)
-                if not do_quickmatch or jar_quickmatch(full_name, quickmatch_string):
-                    files_to_scan.append(full_name)
-    return files_to_scan
+    if os.path.isdir(root_dir):
+        print(f"Walking {root_dir}...")
+        files_to_scan = []
+        for root, dirs, files in os.walk(root_dir):
+            for f in files:
+                if f.endswith(".jar"):
+                    full_name = os.path.join(root, f)
+                    if not do_quickmatch or jar_quickmatch(
+                        full_name, quickmatch_string
+                    ):
+                        files_to_scan.append(full_name)
+        return files_to_scan
+    elif os.path.isfile(root_dir):
+        return [root_dir]
+    return []
 
 
-def print_xrefs_analysis(xref_analysis, filename):
+def print_xrefs_analysis(xref_analysis, filename, caller_block):
     first = True
     for classname in xref_analysis.get_calling_classes():
+        if caller_block.match(classname):
+            continue
         calling_methods_by_target = xref_analysis.analyze_class(classname)
 
         if calling_methods_by_target:
@@ -214,10 +223,12 @@ def print_class_existence(xref_analysis, filename):
 def run_scanner(
     root_dir,
     # regex for class name filtering
-    class_regex="org/apache/logging/log4j/Logger",
+    class_regex=".*log4j/Logger",
     # regex for method name filtering (ignored when looking for existence of classes)
     method_regex="(info|warn|error|log|debug|trace|fatal|catching|throwing|traceEntry|printf|logMessage)",
     # checking for existence of this string in classes unless no_quickmatch
+    caller_block=".*org/apache/logging",
+    # if caller class matches this regex, it will *not* be displayed
     quickmatch_string="log4j",
     # not set - looking for calls to specified methods, set - looking for existence of classes
     class_existence=False,
@@ -240,14 +251,21 @@ def run_scanner(
 
     for filename in tqdm(files_to_scan):
         try:
-            xref_analysis = XrefAnalysis(filename, class_regex, method_regex)
+            xref_analysis = XrefAnalysis(
+                filename, class_regex, method_regex, caller_block
+            )
             if class_existence:
-                print_class_existence(xref_analysis, os.path.relpath(filename, root_dir))
+                print_class_existence(
+                    xref_analysis, os.path.relpath(filename, root_dir)
+                )
             else:
-                print_xrefs_analysis(xref_analysis, os.path.relpath(filename, root_dir))
+                print_xrefs_analysis(
+                    xref_analysis,
+                    os.path.relpath(filename, root_dir),
+                    xref_analysis.caller_block_compiled,
+                )
         except ValueError as e:
             tqdm.write(f"Parsing error in {filename}")
-
 
 
 if __name__ == "__main__":
