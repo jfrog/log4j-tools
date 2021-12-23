@@ -160,12 +160,7 @@ def test_file(file: IO[bytes], rel_path: str):
 
 
 def acceptable_filename(filename: str):
-    return (
-        filename.endswith(".jar")
-        or filename.endswith(".war")
-        or filename.endswith(".ear")
-        or filename.endswith(".sar")
-    )
+    return any(filename.endswith(ext) for ext in [".jar", ".war", ".sar", ".ear", ".zip"])
 
 
 def run_scanner(root_dir: str, exclude_dirs: Set[str]):

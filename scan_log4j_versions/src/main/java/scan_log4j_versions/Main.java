@@ -229,7 +229,7 @@ public class Main {
 
     private static boolean acceptableFile(String filename) {
         return filename.endsWith(".jar") || filename.endsWith(".war") ||
-               filename.endsWith(".ear") || filename.endsWith(".sar");
+               filename.endsWith(".ear") || filename.endsWith(".sar") || filename.endsWith(".zip");
     }
 
     private static void runScan(String root_folder, List<Path> excludedDirs) throws IOException{
