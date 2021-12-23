@@ -226,9 +226,9 @@ def run_scanner(
     class_regex=".*log4j/Logger",
     # regex for method name filtering (ignored when looking for existence of classes)
     method_regex="(info|warn|error|log|debug|trace|fatal|catching|throwing|traceEntry|printf|logMessage)",
-    # checking for existence of this string in classes unless no_quickmatch
-    caller_block=".*org/apache/logging",
     # if caller class matches this regex, it will *not* be displayed
+    caller_block=".*org/apache/logging",
+    # checking for existence of this string in classes unless no_quickmatch
     quickmatch_string="log4j",
     # not set - looking for calls to specified methods, set - looking for existence of classes
     class_existence=False,

@@ -104,13 +104,14 @@ will recursively scan all `.jar` files in `root-folder`, for each printing out l
 
 The tool may be configured for additional use cases using the following command line flags.
 
-| Flag                  | Default value                                                | Use                                                          |
-| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `--class_regex`       | org/apache/logging/log4j/Logger                              | Regular expression for required class name                   |
-| `--method_regex`      | [^1] | Regular expression for required method name                  |
-| `--quickmatch_string` | log4j                                                        | Pre-condition for file analysis: .jar files not containing the specified string will be ignored |
-| `--class_existence`   | Not set                                                      | When not set, look for calls to class::method as  specified by regexes. When set, `--method_regex` is ignored, and the tool will look for *existence* of classes specified by `--class_regex` in the jar. |
-| `--no_quickmatch`     | Not set                                                      | When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed |
+| Flag                  | Default value        | Use                                                          |
+| --------------------- | -------------------- | ------------------------------------------------------------ |
+| `--class_regex`       | .*log4j/Logger       | Regular expression for required class name                   |
+| `--method_regex`      | [^1]                 | Regular expression for required method name                  |
+| `--quickmatch_string` | log4j                | Pre-condition for file analysis: .jar files not containing the specified string will be ignored |
+| `--class_existence`   | Not set              | When not set, look for calls to class::method as  specified by regexes. When set, `--method_regex` is ignored, and the tool will look for *existence* of classes specified by `--class_regex` in the jar. |
+| `--no_quickmatch`     | Not set              | When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed |
+| `--caller_block`      | .*org/apache/logging | If caller class matches this regex, it will *not* be displayed |
 
 For example, 
 
