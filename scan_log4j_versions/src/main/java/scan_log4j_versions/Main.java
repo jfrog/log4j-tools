@@ -43,8 +43,8 @@ public class Main {
         }
     }
 
-    static final private String CLASS_NAME_JNDI_MANAGER = "log4j/core/net/JndiManager.class";
-    static final private String CLASS_NAME_JNDI_LOOKUP = "log4j/core/lookup/JndiLookup.class";
+    static final private String CLASS_NAME_JNDI_MANAGER = "core/net/JndiManager.class";
+    static final private String CLASS_NAME_JNDI_LOOKUP = "core/lookup/JndiLookup.class";
     static final private String PATCH_STRING = "allowedJndiProtocols";
     static final private String PATCH_STRING_216 = "log4j2.enableJndi";
     static final private String PATCH_STRING_21 = "LOOKUP";
@@ -229,7 +229,8 @@ public class Main {
 
     private static boolean acceptableFile(String filename) {
         return filename.endsWith(".jar") || filename.endsWith(".war") ||
-               filename.endsWith(".ear") || filename.endsWith(".sar") || filename.endsWith(".zip");
+               filename.endsWith(".ear") || filename.endsWith(".sar") || 
+               filename.endsWith(".zip") || filename.endsWith(".par");
     }
 
     private static void runScan(String root_folder, List<Path> excludedDirs) throws IOException{

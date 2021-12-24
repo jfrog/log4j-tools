@@ -5,8 +5,8 @@ from enum import Enum, IntEnum, auto
 from typing import IO, Set
 from zipfile import BadZipFile, ZipFile
 
-JNDIMANAGER_CLASS_NAME = "log4j/core/net/JndiManager.class"
-JNDILOOKUP_CLASS_NAME = "log4j/core/lookup/JndiLookup.class"
+JNDIMANAGER_CLASS_NAME = "core/net/JndiManager.class"
+JNDILOOKUP_CLASS_NAME = "core/lookup/JndiLookup.class"
 PATCH_STRING = b"allowedJndiProtocols"
 PATCH_STRING_216 = b"log4j2.enableJndi"
 PATCH_STRING_217 = b"isJndiLookupEnabled"
@@ -160,7 +160,7 @@ def test_file(file: IO[bytes], rel_path: str):
 
 
 def acceptable_filename(filename: str):
-    return any(filename.endswith(ext) for ext in [".jar", ".war", ".sar", ".ear", ".zip"])
+    return any(filename.endswith(ext) for ext in [".jar", ".war", ".sar", ".ear", ".par", ".zip"])
 
 
 def run_scanner(root_dir: str, exclude_dirs: Set[str]):
