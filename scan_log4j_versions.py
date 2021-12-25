@@ -157,6 +157,9 @@ def test_file(file: IO[bytes], rel_path: str):
 
     except (IOError, BadZipFile):
         return
+    except RuntimeError as e:
+        print(rel_path + ": " + str(e))
+        return
 
 
 def acceptable_filename(filename: str):
