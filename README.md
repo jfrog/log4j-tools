@@ -4,9 +4,9 @@
 
 Click to find:
 
-| [Inclusions of `log4j2` in compiled code](#scan_log4j_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
+| [Inclusions of `log4j2` in compiled code](#scan_jndimanager_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
-| [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) |                                                             |
+| [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) | [Xray wrapper for Log4Shell](#log4shell_xray_wrapper)                                  |
 
 ### Overview
 
@@ -31,7 +31,7 @@ The question is relevant for the cases where the developer would like to verify 
 
 ### 3. Am I configuring this correctly?
 
-Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, JFrog is releasing a few tools. The tools are intended to run in the same environment as a production application.
+Due to the high risk associated with the vulnerability, developers relying on mitigations may want to double check that the environment was indeed configured correctly (which Java runtime actually runs the application? Were environment and command line flags set correctly?). In order to simplify this sanity check, JFrog is releasing a few tools. The tools are intended to run in the same environment as a production application -
 
 * [env_verify.jar](#env_verifyjar) will validate the proper application of mitigations against CVE-2021-44228.
 * [scan_cve_2021_45046_config](#scan_cve_2021_45046_config) will validate the `log4j2` configuration does not allow for exploitation of CVE-2021-45046.
@@ -47,12 +47,10 @@ The tool requires Python 3, without additional dependencies.
 ##### Usage
 
 ```
-python scan_log4j_versions.py root-folder [-exclude folder1 folder2 ..]
+python scan_log4j_versions.py root-folder
 ```
 
 The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` and  `*log4j/core/lookup/JndiLookup.class` (recursively in each `.jar` file). If at least one of the classes is found, the tool attempts to fingerprint its version (including some variations found in patches and backport patches) in order to report whether the code is vulnerable.
-
-Folders appearing after `-exclude` (optional) are skipped.
 
 <img src="img/jndi_manager_results.PNG" style="zoom:33%;" />
 
@@ -64,13 +62,11 @@ To reiterate, the results depend on the code of the classes rather than file nam
 | -------------------- | --------- | ---------------------------------------------- |
 | `2.0`, `2.1 .. 2.14` | `2.15`    | `2.12.2`, `2.16`, `2.17` ,`JndiLookup removed` |
 
-Supported archive extensions: jar, war, ear, sar, par, zip.
-
 ------
 
 ### `scan_log4j_versions.jar`
 
-Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.11/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
+Compiled jar can be downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.8/scan_log4j_versions.jar) or [compiled](#compiling-scan_log4j_versionsjar-from-source) from source.
 
 The tool requires java runtime, without additional dependencies. 
 
@@ -106,14 +102,13 @@ will recursively scan all `.jar` files in `root-folder`, for each printing out l
 
 The tool may be configured for additional use cases using the following command line flags.
 
-| Flag                  | Default value        | Use                                                          |
-| --------------------- | -------------------- | ------------------------------------------------------------ |
-| `--class_regex`       | .*log4j/Logger       | Regular expression for required class name                   |
-| `--method_regex`      | [^1]                 | Regular expression for required method name                  |
-| `--quickmatch_string` | log4j                | Pre-condition for file analysis: .jar files not containing the specified string will be ignored |
-| `--class_existence`   | Not set              | When not set, look for calls to class::method as  specified by regexes. When set, `--method_regex` is ignored, and the tool will look for *existence* of classes specified by `--class_regex` in the jar. |
-| `--no_quickmatch`     | Not set              | When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed |
-| `--caller_block`      | .*org/apache/logging | If caller class matches this regex, it will *not* be displayed |
+| Flag                  | Default value                                                | Use                                                          |
+| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `--class_regex`       | org/apache/logging/log4j/Logger                              | Regular expression for required class name                   |
+| `--method_regex`      | [^1] | Regular expression for required method name                  |
+| `--quickmatch_string` | log4j                                                        | Pre-condition for file analysis: .jar files not containing the specified string will be ignored |
+| `--class_existence`   | Not set                                                      | When not set, look for calls to class::method as  specified by regexes. When set, `--method_regex` is ignored, and the tool will look for *existence* of classes specified by `--class_regex` in the jar. |
+| `--no_quickmatch`     | Not set                                                      | When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed |
 
 For example, 
 
@@ -146,7 +141,7 @@ The default use case:
 python scan_log4j_calls_src.py root-folder
 ```
 
-will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods. 
+will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods.
 
 The tool may be configured for additional use cases using the following command line flags:
 
@@ -187,13 +182,17 @@ And read the result after the start-up script completes:
 
 ### `scan_cve_2021_45046_config`
 
-##### Usage
+##### Dependencies
 
 Python version requires installing dependencies:
 
 ```
 pip install -r requirements.txt
 ```
+
+
+
+##### Usage
 
 Jar version can be [compiled](#compiling-scan_cve_2021_45046_configjar-from-source) from source or downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.8/scan_cve_2021_45046_config.jar).
 
@@ -212,6 +211,39 @@ Will recursively scan `root-folder` and all archive files in it, looking for pro
 Please note that an "applicable" result only means that the configuration **may** be problematic and should be inspected.
 
 A "non-applicable" result is more conclusive, and means the configuration does not contain even the basic (publicly known) options for the exploitation of CVE-2021-45046.
+
+------
+
+### `log4shell_xray_wrapper`
+
+##### Dependencies
+
+Python version requires installing dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+In addition, the following tools must be available in your `PATH`:
+
+* [JFrog CLI](https://www.jfrog.com/confluence/display/CLI/JFrog+CLI#JFrogCLI-Downloadandinstallation) 2.6.2 or later (either `jfrog` or `jf`) - [configured](https://www.jfrog.com/confluence/display/CLI/JFrog+CLI#JFrogCLI-JFrogPlatformConfiguration) with an "Xray URL"
+* Either [maven](https://maven.apache.org/download.cgi) or [gradle](https://gradle.org/install/) (according to the project you are planning to scan)
+
+
+
+##### Usage
+
+```bash
+python log4shell_xray_wrapper.py [--recurse] [--verbose] target_dir
+```
+
+The tool looks for Maven and Gradle projects , either directly at `target_dir` or (if `--recurse` is specified) in any child directory of `target_dir`.
+
+Any detected project will be scanned using Xray (via the JFrog CLI), and results will be filtered to show only the Log4Shell vulnerabilities:
+
+* CVE-2021-44228
+* CVE-2021-45046
+* CVE-2021-45105
 
 
 
