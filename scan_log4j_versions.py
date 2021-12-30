@@ -4,6 +4,8 @@ from collections import namedtuple
 from enum import Enum, IntEnum, auto
 from typing import IO, Set
 from zipfile import BadZipFile, ZipFile
+from tarfile import open as tar_open
+from tarfile import CompressionError, ReadError
 
 JNDIMANAGER_CLASS_NAME = "core/net/JndiManager.class"
 JNDILOOKUP_CLASS_NAME = "core/lookup/JndiLookup.class"
@@ -17,6 +19,9 @@ RED = "\x1b[31m"
 GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
 RESET_ALL = "\x1b[0m"
+
+ZIP_EXTENSIONS = {".jar", ".war", ".sar", ".ear", ".par", ".zip", ".apk"}
+TAR_EXTENSIONS = {".gz", ".tar"}
 
 
 class JndiMgrVer(IntEnum):
@@ -116,7 +121,7 @@ def class_version_jndi_manager(classfile_content: bytes) -> JndiMgrVer:
     return JndiMgrVer.v20_v214
 
 
-def test_file(file: IO[bytes], rel_path: str):
+def zip_file(file, rel_path):
     try:
         with ZipFile(file) as jarfile:
             jndi_manager_status = JndiMgrVer.NOT_FOUND
@@ -154,7 +159,6 @@ def test_file(file: IO[bytes], rel_path: str):
                     ),
                 )
                 version_message(rel_path, diagnosis)
-
     except (IOError, BadZipFile):
         return
     except RuntimeError as e:
@@ -162,8 +166,30 @@ def test_file(file: IO[bytes], rel_path: str):
         return
 
 
+def tar_file(file: IO[bytes], rel_path: str):
+    try:
+        with tar_open(fileobj=file) as tarfile:
+            for item in tarfile:
+                # check for path traversal
+                if item.isfile() and acceptable_filename(item.name):
+                    fileobj = tarfile.extractfile(item)
+                    new_path = rel_path + "/" + item.name
+                    test_file(fileobj, new_path)
+    except (IOError, FileExistsError, CompressionError, ReadError) as e:
+        print(rel_path + ": " + str(e))
+        return
+
+
+def test_file(file: IO[bytes], rel_path: str):
+    if any(rel_path.endswith(ext) for ext in ZIP_EXTENSIONS):
+        zip_file(file, rel_path)
+
+    elif any(rel_path.endswith(ext) for ext in TAR_EXTENSIONS):
+        tar_file(file, rel_path)
+
+
 def acceptable_filename(filename: str):
-    return any(filename.endswith(ext) for ext in [".jar", ".war", ".sar", ".ear", ".par", ".zip"])
+    return any(filename.endswith(ext) for ext in ZIP_EXTENSIONS | TAR_EXTENSIONS)
 
 
 def run_scanner(root_dir: str, exclude_dirs: Set[str]):
