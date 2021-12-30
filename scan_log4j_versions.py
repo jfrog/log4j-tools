@@ -169,13 +169,15 @@ def zip_file(file, rel_path):
 def tar_file(file: IO[bytes], rel_path: str):
     try:
         with tar_open(fileobj=file) as tarfile:
-            for item in tarfile:
-                # check for path traversal
+            for item in tarfile.getmembers():
+                if "../" in item.name:
+                    continue
                 if item.isfile() and acceptable_filename(item.name):
                     fileobj = tarfile.extractfile(item)
                     new_path = rel_path + "/" + item.name
                     test_file(fileobj, new_path)
-    except (IOError, FileExistsError, CompressionError, ReadError) as e:
+                item = tarfile.next()
+    except (IOError, FileExistsError, CompressionError, ReadError, RecursionError) as e:
         print(rel_path + ": " + str(e))
         return
 
