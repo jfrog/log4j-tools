@@ -60,9 +60,9 @@ To reiterate, the results depend on the code of the classes rather than file nam
 
 #### Currently recognized log4j versions:
 
-| Vulnerable           | Mitigated | Fixed                                          |
-| -------------------- | --------- | ---------------------------------------------- |
-| `2.0`, `2.1 .. 2.14` | `2.15`    | `2.12.2`, `2.16`, `2.17` ,`JndiLookup removed` |
+| Vulnerable           | Mitigated | Fixed                                                        |
+| -------------------- | --------- | ------------------------------------------------------------ |
+| `2.0`, `2.1 .. 2.14` | `2.15`    | `2.12.2`, `2.16`, `2.17` ,`JndiLookup removed`; patched versions `2.17.1`, `2.3.2`, `2.12.4` classified as `2.17` |
 
 Supported archive extensions: jar, war, ear, sar, par, zip.
 
