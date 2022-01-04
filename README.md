@@ -238,6 +238,14 @@ In addition, the following tools must be available in your `PATH`:
 
 ##### Usage
 
+Jar version can be [compiled](#compiling-log4shell_xray_wrapperjar-from-source) from source or downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.9/log4shell_xray_wrapper.jar).
+
+```
+java -jar log4shell_xray_wrapper.jar [--recurse] [--verbose] target_dir
+```
+
+or running the Python version:
+
 ```bash
 python log4shell_xray_wrapper.py [--recurse] [--verbose] target_dir
 ```
@@ -283,5 +291,16 @@ cp build/libs/env_verify.jar ..
 ```
 
 ------
+
+### Compiling `log4shell_xray_wrapper.jar` from source
+
+```
+cd log4shell_xray_wrapper
+gradle shadowJar
+cp build/libs/log4shell_xray_wrapper-all.jar ..
+```
+
+------
+
 
 [^1]: (info&#124;warn&#124;error&#124;log&#124;debug&#124;trace&#124;fatal&#124;catching&#124;throwing&#124;traceEntry&#124;printf&#124;logMessage)

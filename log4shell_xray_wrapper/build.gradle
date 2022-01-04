@@ -1,0 +1,29 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'log4shell_xray_wrapper.Main'
+        )
+    }
+}
+
+dependencies {
+	testImplementation 'junit:junit:4.11'
+	implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'info.picocli:picocli:4.6.2'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.apache.maven:maven-artifact:3.8.1'
+}
