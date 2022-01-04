@@ -238,7 +238,7 @@ In addition, the following tools must be available in your `PATH`:
 
 ##### Usage
 
-Jar version can be [compiled](#compiling-log4shell_xray_wrapperjar-from-source) from source or downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.9/log4shell_xray_wrapper.jar).
+Jar version can be [compiled](#compiling-log4shell_xray_wrapperjar-from-source) from source or downloaded from [here](https://releases.jfrog.io/artifactory/log4j-tools/0.0.12/log4shell_xray_wrapper-all.jar).
 
 ```
 java -jar log4shell_xray_wrapper.jar [--recurse] [--verbose] target_dir
