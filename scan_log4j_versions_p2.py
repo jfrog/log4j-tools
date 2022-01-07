@@ -98,7 +98,7 @@ def version_message(filename, diagnosis):
         Status.PARTIAL: YELLOW + "mitigated" + RESET_ALL,
         Status.INCONSISTENT: RED + "inconsistent" + RESET_ALL,
     }
-    print(filename + ": " + messages[diagnosis.status] + " " + diagnosis.note)
+    print(filename + " >> " + messages[diagnosis.status] + " " + diagnosis.note)
 
 
 def class_version_jndi_lookup(classfile_content):
@@ -122,7 +122,7 @@ def class_version_jndi_manager(classfile_content):
     return JndiMgrVer.v20_v214
 
 
-def zip_file(file, rel_path):
+def zip_file(file, rel_path, silent_mode):
     try:
         jarfile = ZipFile(file)
         jndi_manager_status = JndiMgrVer.NOT_FOUND
@@ -131,19 +131,25 @@ def zip_file(file, rel_path):
         for file_name in jarfile.namelist():
             if acceptable_filename(file_name):
                 next_file = jarfile.open(file_name, "r")
-                test_file(BytesIO(next_file.read()), os.path.join(rel_path, file_name))
+                test_file(
+                    BytesIO(next_file.read()),
+                    os.path.join(rel_path, file_name),
+                    silent_mode,
+                )
                 continue
 
             if file_name.endswith(JNDIMANAGER_CLASS_NAME):
                 if jndi_manager_status != JndiMgrVer.NOT_FOUND:
-                    confusion_message(file_name, JNDIMANAGER_CLASS_NAME)
+                    if not silent_mode:
+                        confusion_message(file_name, JNDIMANAGER_CLASS_NAME)
                 classfile_content = jarfile.read(file_name)
                 jndi_manager_status = class_version_jndi_manager(classfile_content)
                 continue
 
             if file_name.endswith(JNDILOOKUP_CLASS_NAME):
                 if jndi_lookup_status != JndiLookupVer.NOT_FOUND:
-                    confusion_message(file_name, JNDILOOKUP_CLASS_NAME)
+                    if not silent_mode:
+                        confusion_message(file_name, JNDILOOKUP_CLASS_NAME)
                 classfile_content = jarfile.read(file_name)
                 jndi_lookup_status = class_version_jndi_lookup(classfile_content)
 
@@ -163,14 +169,16 @@ def zip_file(file, rel_path):
     except IOError:
         return
     except BadZipfile as e:
-        print(rel_path + ": " + str(e))
+        if not silent_mode:
+            print(rel_path + ": " + str(e))
         return
     except RuntimeError as e:
-        print(rel_path + ": " + str(e))
+        if not silent_mode:
+            print(rel_path + ": " + str(e))
         return
 
 
-def tar_file(file, rel_path):
+def tar_file(file, rel_path, silent_mode):
     try:
         with tar_open(fileobj=file) as tarfile:
             for item in tarfile.getmembers():
@@ -182,23 +190,24 @@ def tar_file(file, rel_path):
                     test_file(fileobj, new_path)
                 item = tarfile.next()
     except (EnvironmentError, RuntimeError, CompressionError, ReadError) as e:
-        print(rel_path + ": " + str(e))
+        if not silent_mode:
+            print(rel_path + ": " + str(e))
         return
 
 
-def test_file(file, rel_path):
+def test_file(file, rel_path, silent_mode):
     if any(rel_path.endswith(ext) for ext in ZIP_EXTENSIONS):
-        zip_file(file, rel_path)
+        zip_file(file, rel_path, silent_mode)
 
     elif any(rel_path.endswith(ext) for ext in TAR_EXTENSIONS):
-        tar_file(file, rel_path)
+        tar_file(file, rel_path, silent_mode)
 
 
 def acceptable_filename(filename):
     return any(filename.endswith(ext) for ext in ZIP_EXTENSIONS | TAR_EXTENSIONS)
 
 
-def run_scanner(root_dir, exclude_dirs):
+def run_scanner(root_dir, exclude_dirs, silent_mode):
     if os.path.isdir(root_dir):
         for directory, dirs, files in os.walk(root_dir, topdown=True):
             [
@@ -213,15 +222,15 @@ def run_scanner(root_dir, exclude_dirs):
                     rel_path = os.path.relpath(full_path, root_dir)
                     try:
                         with open(full_path, "rb") as file:
-                            test_file(file, rel_path)
+                            test_file(file, rel_path, silent_mode)
                     except EnvironmentError as fnf_error:
-                        print(filename + ": " + str(fnf_error))
-                        pass
+                        if not silent_mode:
+                            print(filename + ": " + str(fnf_error))
 
     elif os.path.isfile(root_dir):
         if acceptable_filename(root_dir):
             with open(root_dir, "rb") as file:
-                test_file(file, "")
+                test_file(file, "", silent_mode)
 
 
 def print_usage():
@@ -231,21 +240,25 @@ def print_usage():
 
 
 def parse_command_line():
-    if len(sys.argv) < 2 or len(sys.argv) == 3:
+    if len(sys.argv) < 2:
         print_usage()
 
     root_dir = sys.argv[1]
     exclude_folders = []
-    if len(sys.argv) > 3:
-        if sys.argv[2] != "-exclude":
+
+    silent = len(sys.argv) > 2 and sys.argv[2] == "-quiet"
+    exclude_start = 3 if silent else 2
+    if len(sys.argv) > exclude_start:
+        if not sys.argv[exclude_start] == "-exclude":
             print_usage()
-        exclude_folders = sys.argv[3:]
-    return root_dir, exclude_folders
+        exclude_folders = sys.argv[exclude_start + 1 :]
+
+    return root_dir, exclude_folders, silent
 
 
 if __name__ == "__main__":
 
-    root_dir, exclude_dirs = parse_command_line()
+    root_dir, exclude_dirs, silent_mode = parse_command_line()
 
     for dir_to_check in exclude_dirs:
         if not os.path.isdir(dir_to_check):
@@ -261,4 +274,4 @@ if __name__ == "__main__":
     if exclude_dirs:
         print("Excluded: " + ", ".join(exclude_dirs))
 
-    run_scanner(root_dir, set(exclude_dirs))
+    run_scanner(root_dir, set(exclude_dirs), silent_mode)
