@@ -50,6 +50,12 @@ The tool requires Python 3, without additional dependencies.
 python scan_log4j_versions.py root-folder [-exclude folder1 folder2 ..]
 ```
 
+If python3 is not available, python2 ported version can be used:
+
+```
+python2 scan_log4j_versions_p2.py root-folder [-exclude folder1 folder2 ..]
+```
+
 The tool will scan `root_folder` recursively for `.jar` and `.war` files; in each located file the tool looks for a `*log4j/core/net/JndiManager.class` and  `*log4j/core/lookup/JndiLookup.class` (recursively in each `.jar` file). If at least one of the classes is found, the tool attempts to fingerprint its version (including some variations found in patches and backport patches) in order to report whether the code is vulnerable.
 
 Folders appearing after `-exclude` (optional) are skipped.
