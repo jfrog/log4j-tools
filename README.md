@@ -6,7 +6,8 @@ Click to find:
 
 | [Inclusions of `log4j2` in compiled code](#scan_jndimanager_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
-| [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) | [Xray wrapper for Log4Shell](#log4shell_xray_wrapper)                                  |
+| [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) | [Xray wrapper for Log4Shell](#log4shell_xray_wrapper)       |
+| [Automatically patch container images in Artifactory](patch_rt_container_registry_repos/README.md) |                                                              |                                                             |
 
 ### Overview
 
