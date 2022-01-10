@@ -1,8 +1,7 @@
 import os
 import sys
 from collections import namedtuple
-from enum import Enum, IntEnum, auto
-from typing import IO, Set
+from enum import Enum, IntEnum
 from zipfile import BadZipFile, ZipFile
 from tarfile import open as tar_open
 from tarfile import CompressionError, ReadError
@@ -26,25 +25,25 @@ TAR_EXTENSIONS = {".gz", ".tar"}
 
 class JndiMgrVer(IntEnum):
     NOT_FOUND = 0
-    v20_v214 = auto()
-    v215 = auto()
-    v216 = auto()
-    v217 = auto()
-    v212_PATCH = auto()
+    v20_v214 = 1
+    v215 = 2
+    v216 = 3
+    v217 = 4
+    v212_PATCH = 5
 
 
 class JndiLookupVer(IntEnum):
     NOT_FOUND = 0
-    v20 = auto()
-    v21_PLUS = auto()
-    v212_PATCH = auto()
+    v20 = 1
+    v21_PLUS = 2
+    v212_PATCH = 3
 
 
 class Status(Enum):
-    INCONSISTENT = auto()
-    VULN = auto()
-    PARTIAL = auto()
-    FIX = auto()
+    INCONSISTENT = 0
+    VULN = 1
+    PARTIAL = 2
+    FIX = 3
 
 
 Diag = namedtuple("Diag", ["status", "note"])
@@ -121,7 +120,7 @@ def class_version_jndi_manager(classfile_content: bytes) -> JndiMgrVer:
     return JndiMgrVer.v20_v214
 
 
-def zip_file(file: IO[bytes], rel_path: str, silent_mode: bool):
+def zip_file(file, rel_path: str, silent_mode: bool):
     try:
         with ZipFile(file) as jarfile:
             jndi_manager_status = JndiMgrVer.NOT_FOUND
@@ -169,7 +168,7 @@ def zip_file(file: IO[bytes], rel_path: str, silent_mode: bool):
         return
 
 
-def tar_file(file: IO[bytes], rel_path: str, silent_mode: bool):
+def tar_file(file, rel_path: str, silent_mode: bool):
     try:
         with tar_open(fileobj=file) as tarfile:
             for item in tarfile.getmembers():
@@ -180,13 +179,13 @@ def tar_file(file: IO[bytes], rel_path: str, silent_mode: bool):
                     new_path = rel_path + "/" + item.name
                     test_file(fileobj, new_path, silent_mode)
                 item = tarfile.next()
-    except (IOError, FileExistsError, CompressionError, ReadError, RecursionError) as e:
+    except (IOError, FileExistsError, CompressionError, ReadError, RuntimeError) as e:
         if not silent_mode:
             print(rel_path + ": " + str(e))
         return
 
 
-def test_file(file: IO[bytes], rel_path: str, silent_mode: bool):
+def test_file(file, rel_path: str, silent_mode: bool):
     if any(rel_path.endswith(ext) for ext in ZIP_EXTENSIONS):
         zip_file(file, rel_path, silent_mode)
 
@@ -198,7 +197,7 @@ def acceptable_filename(filename: str):
     return any(filename.endswith(ext) for ext in ZIP_EXTENSIONS | TAR_EXTENSIONS)
 
 
-def run_scanner(root_dir: str, exclude_dirs: Set[str], silent_mode: bool):
+def run_scanner(root_dir: str, exclude_dirs, silent_mode: bool):
     if os.path.isdir(root_dir):
         for directory, dirs, files in os.walk(root_dir, topdown=True):
             [

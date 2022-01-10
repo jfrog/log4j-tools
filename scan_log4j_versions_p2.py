@@ -2,7 +2,6 @@ import os
 import sys
 from collections import namedtuple
 from enum import Enum, IntEnum
-from typing import IO, Set
 from zipfile import ZipFile, BadZipfile
 from tarfile import open as tar_open
 from tarfile import CompressionError, ReadError
@@ -187,7 +186,7 @@ def tar_file(file, rel_path, silent_mode):
                 if item.isfile() and acceptable_filename(item.name):
                     fileobj = tarfile.extractfile(item)
                     new_path = rel_path + "/" + item.name
-                    test_file(fileobj, new_path)
+                    test_file(fileobj, new_path, silent_mode)
                 item = tarfile.next()
     except (EnvironmentError, RuntimeError, CompressionError, ReadError) as e:
         if not silent_mode:
