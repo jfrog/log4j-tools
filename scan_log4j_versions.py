@@ -5,6 +5,7 @@ from enum import Enum, IntEnum
 from zipfile import BadZipFile, ZipFile
 from tarfile import open as tar_open
 from tarfile import CompressionError, ReadError
+import zlib
 
 JNDIMANAGER_CLASS_NAME = "core/net/JndiManager.class"
 JNDILOOKUP_CLASS_NAME = "core/lookup/JndiLookup.class"
@@ -160,9 +161,7 @@ def zip_file(file, rel_path: str, silent_mode: bool):
                     ),
                 )
                 version_message(rel_path, diagnosis)
-    except (IOError, BadZipFile):
-        return
-    except RuntimeError as e:
+    except (IOError, BadZipFile, UnicodeDecodeError, zlib.error, RuntimeError) as e:
         if not silent_mode:
             print(rel_path + ": " + str(e))
         return
@@ -179,7 +178,7 @@ def tar_file(file, rel_path: str, silent_mode: bool):
                     new_path = rel_path + "/" + item.name
                     test_file(fileobj, new_path, silent_mode)
                 item = tarfile.next()
-    except (IOError, FileExistsError, CompressionError, ReadError, RuntimeError) as e:
+    except (IOError, FileExistsError, CompressionError, ReadError, RuntimeError, UnicodeDecodeError, zlib.error) as e:
         if not silent_mode:
             print(rel_path + ": " + str(e))
         return
