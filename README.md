@@ -7,7 +7,7 @@ Click to find:
 | [Inclusions of `log4j2` in compiled code](#scan_jndimanager_versionspy) | [Calls to `log4j2` in compiled code](#scan_log4j_calls_jarpy) | [Calls to `log4j2` in source code](#scan_log4j_calls_srcpy) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------- |
 | [Sanity check for env mitigations](#env_verifyjar)           | [Applicability of CVE-2021-45046](#scan_cve_2021_45046_config) | [Xray wrapper for Log4Shell](#log4shell_xray_wrapper)       |
-| [Automatically patch container images in Artifactory](patch_rt_container_registry_repos/README.md) |                                                              |                                                             |
+| [Automatically patch container images in Artifactory](patch_rt_container_registry_repos/python/README.md) |                                                              |                                                             |
 
 ### Overview
 
@@ -274,7 +274,7 @@ Any detected project will be scanned using Xray (via the JFrog CLI), and results
 ### Compiling `scan_log4j_versions.jar` from source
 
 ```
-cd scan_log4j_versions
+cd scan_log4j_versions/java
 gradle build
 cp build/libs/scan_log4j_versions.jar ..
 ```
@@ -284,7 +284,7 @@ cp build/libs/scan_log4j_versions.jar ..
 ### Compiling `env_verify.jar` from source
 
 ```
-cd env_verify
+cd env_verify/java
 gradle build
 cp build/libs/env_verify.jar ..
 ```
@@ -294,9 +294,9 @@ cp build/libs/env_verify.jar ..
 ### Compiling `scan_cve_2021_45046_config.jar` from source
 
 ```
-cd env_verify
+cd scan_cve_2021_45046_config/java
 gradle build
-cp build/libs/env_verify.jar ..
+cp build/libs/scan_cve_2021_45046_config.jar ..
 ```
 
 ------
@@ -304,7 +304,7 @@ cp build/libs/env_verify.jar ..
 ### Compiling `log4shell_xray_wrapper.jar` from source
 
 ```
-cd log4shell_xray_wrapper
+cd log4shell_xray_wrapper/java
 gradle shadowJar
 cp build/libs/log4shell_xray_wrapper-all.jar ..
 ```

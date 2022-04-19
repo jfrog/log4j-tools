@@ -178,7 +178,15 @@ def tar_file(file, rel_path: str, silent_mode: bool):
                     new_path = rel_path + "/" + item.name
                     test_file(fileobj, new_path, silent_mode)
                 item = tarfile.next()
-    except (IOError, FileExistsError, CompressionError, ReadError, RuntimeError, UnicodeDecodeError, zlib.error) as e:
+    except (
+        IOError,
+        FileExistsError,
+        CompressionError,
+        ReadError,
+        RuntimeError,
+        UnicodeDecodeError,
+        zlib.error,
+    ) as e:
         if not silent_mode:
             print(rel_path + ": " + str(e))
         return

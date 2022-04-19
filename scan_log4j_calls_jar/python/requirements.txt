@@ -1,5 +1,4 @@
 jawa
-javalang
 tqdm
 easyargs
 colorama
