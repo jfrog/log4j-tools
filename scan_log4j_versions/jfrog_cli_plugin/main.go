@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/jfrog/jfrog-cli-core/v2/plugins"
 	"github.com/jfrog/jfrog-cli-core/v2/plugins/components"
-	"scan_log4j_versions/commands"
+	"scan-log4j-versions/commands"
 )
 
 func main() {
@@ -12,7 +12,7 @@ func main() {
 
 func getApp() components.App {
 	app := components.App{}
-	app.Name = "scan_log4j_versions"
+	app.Name = "scan-log4j-versions"
 	app.Description = "The tool will scan recursively for compiled Java files vulnerable to CVE-2021-44228"
 	app.Version = "v1.0.0"
 	app.Commands = getCommands()

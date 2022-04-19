@@ -1,4 +1,4 @@
-module scan_log4j_calls_src
+module scan-log4j-calls-src
 
 go 1.14
 

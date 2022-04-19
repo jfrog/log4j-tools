@@ -1,7 +1,7 @@
-# scan_log4j_calls_src
+# scan-log4j-calls-src
 
 ## About this plugin
-This plugin will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods. 
+This plugin will recursively scan all `.java` files in `root-folder`, for each printing out the locations (file name and corresponding code lines) of calls to `log4j2` logging methods.
 
 The plugin can be configured for arbitrary classes and methods using command line flags.
 
@@ -13,7 +13,7 @@ Typical output looks like this:
 
 ## Usage example
 
-![Usage example](img/scan_log4j_calls_src.gif)
+![Usage example](img/scan-log4j-calls-src.gif)
 
 
 
@@ -21,19 +21,19 @@ Typical output looks like this:
 
 Installing the latest version:
 
-`$ jf plugin install scan_log4j_calls_src`
+`$ jf plugin install scan-log4j-calls-src`
 
 Installing a specific version:
 
-`$ jf plugin install scan_log4j_calls_src@version`
+`$ jf plugin install scan-log4j-calls-src@version`
 
 Uninstalling a plugin:
 
-`$ jf plugin uninstall scan_log4j_calls_src`
+`$ jf plugin uninstall scan-log4j-calls-src`
 
 ## Usage
 ### Commands
-`jf scan_log4j_calls_src run root-folder [--class_regex regex] [--method_regex regex] `
+`jf scan-log4j-calls-src run root-folder [--class_regex regex] [--method_regex regex] `
 
 * run
 
@@ -44,7 +44,7 @@ Uninstalling a plugin:
       - method_regex - Regular expression for required method name **[Default: `(info|warn|error|log|debug|trace|fatal|catching|throwing|traceEntry|printf|logMessage)`]**
   - Example:
   ```
-  $ jf scan_log4j_calls_src run srcs_dir --method_regex "(info|warn)"
+  $ jf scan-log4j-calls-src run srcs_dir --method_regex "(info|warn)"
   ```
 
 

@@ -1,19 +1,21 @@
 package commands
 
 import (
+	"github.com/jfrog/jfrog-cli-core/v2/utils/coreutils"
 	"github.com/stretchr/testify/assert"
-	"path"
 	"path/filepath"
 	"regexp"
 	"testing"
 )
 
 func TestHappyFlow(t *testing.T) {
-	// TODO - Add an API to get the resources directory
-	resourcesPath := path.Join("..", "resources")
+	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("env-verify")
+	if nil != err {
+		assert.Fail(t, "could not find plugin resources directory")
+	}
 
 	// Build the command line
-	jarPath := filepath.Join(resourcesPath, "env_verify.jar")
+	jarPath := filepath.Join(resourcesPath, "env-verify.jar")
 	args := []string{"‐Dlog4j2.formatMsgNoLookups=True", "-jar", jarPath}
 	err, out := getCmdOutput("java", args)
 	assert.NoError(t, err)

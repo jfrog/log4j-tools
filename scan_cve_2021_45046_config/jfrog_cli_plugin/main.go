@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/jfrog/jfrog-cli-core/v2/plugins"
 	"github.com/jfrog/jfrog-cli-core/v2/plugins/components"
-	"scan_cve_2021_45046_config/commands"
+	"scan-cve-2021-45046-config/commands"
 )
 
 func main() {
@@ -12,9 +12,9 @@ func main() {
 
 func getApp() components.App {
 	app := components.App{}
-	app.Name = "scan_cve_2021_45046_config"
+	app.Name = "scan-cve-2021-45046-config"
 	app.Description = "The tool will scan recursively for Log4j configurations applicable to CVE-2021-45046"
-	app.Version = "v1.0.0"
+	app.Version = "v1.0.1"
 	app.Commands = getCommands()
 	return app
 }

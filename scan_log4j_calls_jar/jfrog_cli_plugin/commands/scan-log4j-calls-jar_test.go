@@ -1,19 +1,21 @@
 package commands
 
 import (
+	"github.com/jfrog/jfrog-cli-core/v2/utils/coreutils"
 	"github.com/stretchr/testify/assert"
-	"path"
 	"path/filepath"
 	"runtime"
 	"testing"
 )
 
 func TestHappyFlow(t *testing.T) {
-	// TODO - Add an API to get the resources directory
-	resourcesPath := path.Join("..", "resources")
+	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("scan-log4j-calls-jar")
+	if nil != err {
+		assert.Fail(t, "could not find plugin resources directory")
+	}
 
 	// Build the command line
-	pyexeFilename := "scan_log4j_calls_jar"
+	pyexeFilename := "scan-log4j-calls-jar"
 	if runtime.GOOS == "windows" {
 		pyexeFilename += ".exe"
 	}

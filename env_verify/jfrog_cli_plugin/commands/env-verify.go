@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hairyhenderson/go-which"
 	"github.com/jfrog/jfrog-cli-core/v2/plugins/components"
+	"github.com/jfrog/jfrog-cli-core/v2/utils/coreutils"
 	"os/exec"
 	"path/filepath"
 )
@@ -13,11 +14,10 @@ import (
 func GetCommand() components.Command {
 	return components.Command{
 		Name:        "run",
-		Description: "Scan recursively for compiled Java files",
+		Description: "Alert on JVM-based mitigations to Log4Shell",
 		Arguments:   getArguments(),
-		Flags:       getFlags(),
 		Action: func(c *components.Context) error {
-			return scanCmd(c)
+			return verifyCmd(c)
 		},
 	}
 }
@@ -25,19 +25,8 @@ func GetCommand() components.Command {
 func getArguments() []components.Argument {
 	return []components.Argument{
 		{
-			Name:        "root-folder",
-			Description: "Directory to start the recursive scan from",
-		},
-	}
-}
-
-func getFlags() []components.Flag {
-	return []components.Flag{
-		components.StringFlag{
-			Name:         "exclude",
-			Description:  "Don't scan the specified directories",
-			DefaultValue: "",
-			Mandatory:    false,
+			Name:        "VM_ARGS",
+			Description: "Arguments to the JVM, as passed to the original Java program",
 		},
 	}
 }
@@ -65,30 +54,24 @@ func getCmdOutput(executable string, args []string) (error, string) {
 	return err, ""
 }
 
-func scanCmd(c *components.Context) error {
-	// Arg sanity
-	if len(c.Arguments) != 1 {
-		return errors.New("usage: jf scan_log4j_versions run root-folder [--exclude folder1 folder2 ..]")
-	}
-
+func verifyCmd(c *components.Context) error {
 	// Check that "java" is on the path
 	if which.Which("java") == "" && which.Which("java.exe") == "" {
 		return errors.New("could not find \"java\" executable in PATH")
 	}
 
-	// TODO - Add an API to get the resources directory
-	resourcesPath := "resources"
-
-	// Build the command line
-	jarPath := filepath.Join(resourcesPath, "scan_log4j_versions.jar")
-	args := []string{"-jar", jarPath}
-	rootdir := c.Arguments[0]
-	args = append(args, rootdir)
-
-	excludeDir := c.GetStringFlagValue("exclude")
-	if excludeDir != "" {
-		args = append(args, "-exclude", excludeDir)
+	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("env-verify")
+	if nil != err {
+		return errors.New("could not find plugin resources directory")
 	}
+
+	// // Take all arguments as VMARGS, just add "-D" prefix
+	args := c.Arguments
+	for i, arg := range args {
+		args[i] = "-D" + arg
+	}
+	jarPath := filepath.Join(resourcesPath, "env-verify.jar")
+	args = append(args, "-jar", jarPath)
 
 	// Run the command
 	err, out := getCmdOutput("java", args)

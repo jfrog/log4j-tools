@@ -1,4 +1,4 @@
-module scan_cve_2021_45046_config
+module scan-cve-2021-45046-config
 
 go 1.14
 

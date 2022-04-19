@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jfrog/jfrog-cli-core/v2/plugins/components"
+	"github.com/jfrog/jfrog-cli-core/v2/utils/coreutils"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -87,7 +88,6 @@ func getCmdOutput(executable string, args []string) (error, string) {
 		return err, string(stdout.Bytes())
 	}
 	if stderr.Len() > 0 {
-		// TODO
 		return errors.New("command failed"), string(stderr.Bytes())
 	}
 
@@ -112,15 +112,17 @@ func appendBoolArg(c *components.Context, optname string, args []string) []strin
 func scanCmd(c *components.Context) error {
 	// Arg sanity
 	if len(c.Arguments) != 1 {
-		return errors.New("usage: jf scan_log4j_calls_jar run root-folder [--class_regex regex] [--method_regex regex] [--quickmatch_string quickmatch] [--caller_block regex] [--class_existence] [--no_quickmatch]")
+		return errors.New("usage: jf scan-log4j-calls-jar run root-folder [--class_regex regex] [--method_regex regex] [--quickmatch_string quickmatch] [--caller_block regex] [--class_existence] [--no_quickmatch]")
 	}
 
-	// TODO - Add an API to get the resources directory
-	resourcesPath := "resources"
+	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("scan-log4j-calls-jar")
+	if nil != err {
+		return errors.New("could not find plugin resources directory")
+	}
 
 	// Build the command line
 	// TODO: Support different runtime.GOARCH ?
-	pyexeFilename := "scan_log4j_calls_jar"
+	pyexeFilename := "scan-log4j-calls-jar"
 	if runtime.GOOS == "windows" {
 		pyexeFilename += ".exe"
 	}

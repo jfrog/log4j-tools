@@ -1,4 +1,4 @@
-module scan_log4j_versions
+module scan-log4j-versions
 
 go 1.14
 

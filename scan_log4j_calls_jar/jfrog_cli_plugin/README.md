@@ -1,7 +1,7 @@
-# scan_log4j_calls_jar
+# scan-log4j-calls-jar
 
 ## About this plugin
-This plugin recursively scans all `.jar` files in `root-folder`, for each printing out locations (class name and method name) of calls to `info`/`warn`/`error`/`log`/`debug` /`trace`/`fatal` methods of `log4j2.Logger`. 
+This plugin recursively scans all `.jar` files in `root-folder`, for each printing out locations (class name and method name) of calls to `info`/`warn`/`error`/`log`/`debug` /`trace`/`fatal` methods of `log4j2.Logger`.
 
 The plugin can be configured for additional use cases using command line flags.
 
@@ -13,7 +13,7 @@ Typical output looks like this:
 
 ## Usage example
 
-![Usage example](img/scan_log4j_calls_jar.gif)
+![Usage example](img/scan-log4j-calls-jar.gif)
 
 
 
@@ -21,19 +21,19 @@ Typical output looks like this:
 
 Installing the latest version:
 
-`$ jf plugin install scan_log4j_calls_jar`
+`$ jf plugin install scan-log4j-calls-jar`
 
 Installing a specific version:
 
-`$ jf plugin install scan_log4j_calls_jar@version`
+`$ jf plugin install scan-log4j-calls-jar@version`
 
 Uninstalling a plugin:
 
-`$ jf plugin uninstall scan_log4j_calls_jar`
+`$ jf plugin uninstall scan-log4j-calls-jar`
 
 ## Usage
 ### Commands
-`jf scan_log4j_calls_jar run root-folder [--class_regex regex] [--method_regex regex] [--quickmatch_string quickmatch] [--caller_block regex] [--class_existence] [--no_quickmatch]`
+`jf scan-log4j-calls-jar run root-folder [--class_regex regex] [--method_regex regex] [--quickmatch_string quickmatch] [--caller_block regex] [--class_existence] [--no_quickmatch]`
 
 * run
 
@@ -48,7 +48,7 @@ Uninstalling a plugin:
       - no_quickmatch - When set, the value of `--quickmatch_string` is ignored and all jar files are analyzed **[Default: false]**
   - Example:
   ```
-  $ jf scan_log4j_calls_jar run --class_regex ".*JndiManager$" --class_existence --no_quickmatch root-folder
+  $ jf scan-log4j-calls-jar run --class_regex ".*JndiManager$" --class_existence --no_quickmatch root-folder
   ```
 
 

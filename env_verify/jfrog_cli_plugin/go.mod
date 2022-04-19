@@ -1,4 +1,4 @@
-module env_verify
+module env-verify
 
 go 1.14
 
