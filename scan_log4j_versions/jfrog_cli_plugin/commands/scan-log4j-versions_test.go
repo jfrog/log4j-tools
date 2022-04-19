@@ -2,7 +2,6 @@ package commands
 
 import (
 	"github.com/stretchr/testify/assert"
-	"path"
 	"path/filepath"
 	"github.com/jfrog/jfrog-cli-core/v2/utils/coreutils"
 	"testing"

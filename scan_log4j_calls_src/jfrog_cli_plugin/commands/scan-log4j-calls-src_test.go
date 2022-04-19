@@ -9,7 +9,7 @@ import (
 )
 
 func TestHappyFlow(t *testing.T) {
-	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("scan-log4j-calls-src_test")
+	resourcesPath, err := coreutils.GetJfrogPluginsResourcesDir("scan-log4j-calls-src")
 	if nil != err {
 		assert.Fail(t, "could not find plugin resources directory")
 	}
