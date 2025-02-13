@@ -22,7 +22,7 @@ env:
   # a JFrog platform instance with active
   # JFrog Advanced Security subscription
   JF_URL: ${{ secrets.JF_URL }}
-  JF_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+  JF_TOKEN: ${{ secrets.FROGBOT_ACCESS_TOKEN }}
 jobs:
   analyze:
     name: Analyze
