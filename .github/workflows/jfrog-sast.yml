@@ -21,7 +21,7 @@ env:
   # JFrog platform URL and access token for
   # a JFrog platform instance with active
   # JFrog Advanced Security subscription
-  JF_URL: ${{ secrets.JF_URL }}
+  JF_URL: ${{ secrets.FROGBOT_URL }}
   JF_TOKEN: ${{ secrets.FROGBOT_ACCESS_TOKEN }}
 jobs:
   analyze:
